@@ -1,0 +1,9 @@
+helm repo add gitops-agent https://harness.github.io/gitops-helm/
+helm repo update gitops-agent
+helm install argocd gitops-agent/gitops-helm --values override.yaml --namespace default
+
+
+
+kubectl -n default patch deploy hello-kubernetes-first -p '{"spec": {"template": {"metadata": {"annotations": {"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"}}, "spec": {"containers": [{"name": "'hello-kubernetes'","resources": {"limits": {"cpu": "1", "memory": "1G"}, "requests": {"cpu": "1", "memory": "1G"}}}]}}}}'
+
+kubectl -n default patch deploy hello-kubernetes-second -p '{"spec": {"template": {"metadata": {"annotations": {"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"}}, "spec": {"containers": [{"name": "'hello-kubernetes'","resources": {"limits": {"cpu": "1", "memory": "2G"}, "requests": {"cpu": "1", "memory": "2G"}}}]}}}}'

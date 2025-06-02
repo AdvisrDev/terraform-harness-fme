@@ -1,0 +1,15 @@
+version: "3"
+services:
+  terraform-split-ff:
+    build:
+      context: ../contrib/docker
+      dockerfile: devcontainer.Dockerfile
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../:/workspace
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    container_name: terraform-split-ff
