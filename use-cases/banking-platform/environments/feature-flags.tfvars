@@ -32,7 +32,7 @@ feature_flags = [
           matcher = {
             type      = "EQUAL_SET"
             attribute = "customerID"
-            strings   = ["user123"]
+            strings   = ["crizstian"]
           }
         }
       }
@@ -91,7 +91,7 @@ feature_flags = [
           matcher = {
             type      = "EQUAL_SET"
             attribute = "customerID"
-            strings   = ["user123"]
+            strings   = ["crizstian"]
           }
         }
       }
