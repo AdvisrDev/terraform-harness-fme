@@ -30,9 +30,9 @@ feature_flags = [
       {
         condition = {
           matcher = {
-            type      = "EQUAL_SET"
-            attribute = "customerID"
-            strings   = ["crizstian"]
+            type      = "IN_LIST_STRING"
+            attribute = "region"
+            strings   = ["monterrey"]
           }
         }
       }

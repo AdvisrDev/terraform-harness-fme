@@ -1,259 +1,147 @@
-# Banking Platform - Split.io Feature Flags
+# Banking Platform - Split.io Feature Flags Implementation
 
-This use case implements Split.io feature flags for a banking platform, including transaction validation and promotional offers.
+![Banking Platform](docs/diagrams/banking-architecture.md)
 
-## Features
+## 🌍 Documentation Languages | Idiomas de Documentación
 
-- **Bank Validation**: Backend feature flag for transaction validation (`bankvalidation`)
-- **Harness Offer**: Frontend feature flag for promotional offers (`harnessoffer`)
-- **Multi-Environment Support**: Dev, staging, and production configurations
-- **Customer Targeting**: Rule-based targeting by customer ID
-- **Single Feature Flag Definition**: Shared feature flags across all environments
+| Language | Idioma | Quick Start | Inicio Rápido |
+|----------|--------|-------------|---------------|
+| 🇺🇸 **English** | **Inglés** | [📖 Full Documentation](docs/en/README.md) | [📖 Documentación Completa](docs/en/README.md) |
+| 🇪🇸 **Español** | **Spanish** | [📖 Documentación Completa](docs/es/README.md) | [📖 Full Documentation](docs/es/README.md) |
 
-## Architecture
+## 🚀 Quick Overview | Resumen Rápido
 
-This banking platform implementation uses:
-- **Core Module**: `../../modules/split-feature-flags` for Split.io integration
-- **Environment Files**: Separate `.tfvars` files for each environment (dev/staging/prod)
-- **Feature Flag Definition**: Single `feature-flags.tfvars` shared across environments
-- **Clean Separation**: Environment settings separate from feature flag definitions
+### English
+A comprehensive implementation of Split.io feature flags for a banking platform, showcasing real-world scenarios including transaction validation, promotional offers, fraud detection, and operational controls with progressive environment deployment and safety controls.
 
-## Quick Start
+### Español
+Una implementación completa de feature flags de Split.io para una plataforma bancaria, mostrando escenarios del mundo real incluyendo validación de transacciones, ofertas promocionales, detección de fraude y controles operacionales con despliegue progresivo de entornos y controles de seguridad.
 
-1. **Navigate to the banking platform directory:**
-   ```bash
-   cd use-cases/banking-platform
-   ```
+## 🎯 Feature Flags Included | Feature Flags Incluidos
 
-2. **Set up your configuration:**
-   ```bash
-   cp terraform.tfvars.example terraform.tfvars
-   # Edit terraform.tfvars and add your Split.io API key
-   ```
+| Feature Flag | Purpose | Propósito | Environments | Entornos |
+|-------------|---------|-----------|--------------|----------|
+| `bankvalidation` | Transaction validation | Validación de transacciones | dev, staging, prod | dev, staging, prod |
+| `harnessoffer` | Promotional offers | Ofertas promocionales | dev, staging, prod | dev, staging, prod |
+| `advanced-fraud-detection` | AI fraud detection | Detección de fraude IA | dev, staging | dev, staging |
+| `voice-banking-beta` | Voice banking commands | Comandos banca por voz | dev | dev |
+| `payment-gateway-fallback` | Payment fallback control | Control fallback de pagos | dev, staging, prod | dev, staging, prod |
 
-3. **Deploy to development:**
-   ```bash
-   terraform init
-   terraform plan -var-file="environments/dev.tfvars" -var-file="feature-flags.tfvars"
-   terraform apply -var-file="environments/dev.tfvars" -var-file="feature-flags.tfvars"
-   ```
+## 🔧 Quick Start | Inicio Rápido
 
-## Multi-Environment Deployment
+### Prerequisites | Prerequisitos
+- Terraform >= 1.5
+- Split.io account | Cuenta de Split.io
+- API key | Clave API
 
-The banking platform supports clean multi-environment deployments using separate variable files:
-
-### Environment-Specific Deployments
+### Deploy | Desplegar
 
 ```bash
-# Development Environment
-terraform apply \
-  -var-file="environments/dev.tfvars" \
-  -var-file="feature-flags.tfvars" \
-  -var="split_api_key=your-key"
+# Navigate to banking platform | Navegar a plataforma bancaria
+cd use-cases/banking-platform
 
-# Staging Environment  
-terraform apply \
-  -var-file="environments/staging.tfvars" \
-  -var-file="feature-flags.tfvars" \
-  -var="split_api_key=your-key"
+# Initialize Terraform | Inicializar Terraform
+terraform init
 
-# Production Environment
-terraform apply \
-  -var-file="environments/prod.tfvars" \
-  -var-file="feature-flags.tfvars" \
-  -var="split_api_key=your-key"
-```
+# Deploy to development | Desplegar a desarrollo
+terraform apply -var-file="environments/dev.tfvars" -var="split_api_key=your-key"
 
-### File Structure
+# Deploy to staging | Desplegar a staging
+terraform apply -var-file="environments/staging.tfvars" -var="split_api_key=your-key"
 
-```
-use-cases/banking-platform/
-├── environments/
-│   ├── dev.tfvars      # Dev-specific settings (environment_name, is_production)
-│   ├── staging.tfvars  # Staging-specific settings
-│   └── prod.tfvars     # Production-specific settings
-├── feature-flags.tfvars # Shared feature flag definitions
-└── terraform.tfvars    # API key and workspace settings
-```
-
-## Feature Flags
-
-### Bank Validation (`bankvalidation`)
-- **Purpose**: Controls transaction validation logic
-- **Type**: Backend feature flag
-- **Treatments**: `off`, `on`
-- **Targeting**: Specific customer IDs (`user123`)
-
-### Harness Offer (`harnessoffer`)
-- **Purpose**: Controls promotional offer display
-- **Type**: Frontend feature flag
-- **Treatments**: `off`, `on`
-- **Targeting**: No specific rules (default rollout)
-
-## Configuration
-
-### Unified Configuration
-
-All feature flags and workspace settings are defined in `terraform.tfvars` and shared across all environments. This approach provides:
-- **Consistency**: Same feature flags across dev/staging/prod
-- **Maintainability**: Single source of truth for all configuration
-- **Flexibility**: Environment-specific filtering and behavior
-- **Environment Order Management**: Automatic creation order based on feature flag allowed environments
-
-### Environment Creation Order
-
-Feature flags are automatically filtered based on environment creation order: `dev → staging → prod`. This ensures:
-
-- **Development-only features** (`environments = ["dev"]`) only appear in dev
-- **Testing features** (`environments = ["dev", "staging"]`) appear in dev and staging but not prod
-- **Production-ready features** (`environments = ["dev", "staging", "prod"]`) appear in all environments
-
-**Example from current configuration:**
-| Feature Flag | Dev | Staging | Prod | Reason |
-|-------------|-----|---------|------|--------|
-| `voice-banking-beta` | ✅ | ❌ | ❌ | Development only |
-| `advanced-fraud-detection` | ✅ | ✅ | ❌ | Testing phase |
-| `bankvalidation` | ✅ | ✅ | ✅ | Production ready |
-
-### Environment Configuration
-
-Each environment has its own `.tfvars` file containing only environment-specific settings:
-
-| Environment | File | Settings |
-|-------------|------|----------|
-| Development | `environments/dev.tfvars` | `environment_name = "dev"`, `is_production = false` |
-| Staging | `environments/staging.tfvars` | `environment_name = "staging"`, `is_production = false` |
-| Production | `environments/prod.tfvars` | `environment_name = "prod"`, `is_production = true` |
-
-### Variables Reference
-
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `split_api_key` | Split.io API key | ✅ Yes | - |
-| `environment_name` | Environment name | ✅ Yes | - |
-| `is_production` | Production flag | ✅ Yes | - |
-| `workspace_name` | Split.io workspace | No | "Default" |
-| `traffic_type_name` | Traffic type | No | "user" |
-| `feature_flags` | Feature flag definitions | ✅ Yes | - |
-
-## Advanced Usage
-
-### Modifying Feature Flags
-
-To customize the banking platform feature flags:
-
-1. **Edit the feature flags file:**
-   ```bash
-   # Edit feature-flags.tfvars to modify feature flag definitions
-   vim feature-flags.tfvars
-   ```
-
-2. **Apply changes to specific environment:**
-   ```bash
-   terraform plan -var-file="environments/prod.tfvars" -var-file="feature-flags.tfvars"
-   terraform apply -var-file="environments/prod.tfvars" -var-file="feature-flags.tfvars"
-   ```
-
-### Adding New Feature Flags
-
-Add new feature flags to `feature-flags.tfvars`:
-
-```hcl
-# Add to feature-flags.tfvars
-feature_flags = [
-  # ... existing flags ...
-  {
-    name              = "new-banking-feature"
-    description       = "New banking feature for premium customers"
-    default_treatment = "off"
-    treatments = [
-      {
-        name           = "off"
-        configurations = "{\"enabled\": false}"
-        description    = "Feature disabled"
-      },
-      {
-        name           = "premium"
-        configurations = "{\"enabled\": true, \"tier\": \"premium\"}"
-        description    = "Premium tier enabled"
-      }
-    ]
-    rules = [
-      {
-        treatment = "premium"
-        size      = 25
-        condition = {
-          matcher = {
-            type      = "IN_SEGMENT"
-            attribute = "segment"
-            strings   = ["premium_customers"]
-          }
-        }
-      }
-    ]
-  }
-]
-```
-
-## Outputs
-
-The module provides the following outputs:
-
-- `workspace_id`: Split.io workspace ID
-- `environment_id`: Split.io environment ID
-- `banking_feature_flags`: Created feature flags details
-- `banking_feature_flag_definitions`: Feature flag definitions
-
-## Best Practices
-
-### 1. **Environment Isolation**
-- Use separate Terraform workspaces for each environment
-- Keep environment-specific settings minimal and focused
-- Use shared feature flag definitions for consistency
-
-### 2. **State Management**
-For production use, configure remote state management:
-
-```hcl
-# Add to versions.tf or create backend.tf
-terraform {
-  backend "s3" {
-    bucket = "your-terraform-state-bucket"
-    key    = "banking-platform/terraform.tfstate"
-    region = "us-east-1"
-  }
-}
-```
-
-### 3. **Security**
-- Store API keys in environment variables or secret management systems
-- Never commit `terraform.tfvars` with real API keys
-- Use different Split.io API keys for different environments when possible
-
-### 4. **Testing**
-Before applying to production:
-
-```bash
-# Validate configuration
-terraform validate
-
-# Plan changes
-terraform plan -var-file="environments/prod.tfvars" -var="split_api_key=your-key"
-
-# Apply with confirmation
+# Deploy to production | Desplegar a producción
 terraform apply -var-file="environments/prod.tfvars" -var="split_api_key=your-key"
 ```
 
-## Module Integration
+## 🛡️ Environment Safety | Seguridad de Entornos
 
-This banking platform use case demonstrates how to effectively use the core `split-feature-flags` module (`../../modules/split-feature-flags`) with:
-- Clean variable passing
-- Environment-specific configurations
-- Shared feature flag definitions
-- Production-ready patterns
+The system automatically filters feature flags based on environment to prevent accidental production deployments of experimental features.
 
-## Support
+El sistema filtra automáticamente los feature flags basado en el entorno para prevenir despliegues accidentales en producción de características experimentales.
 
-- **Core Module Documentation**: `../../modules/split-feature-flags/README.md`
-- **Split.io Documentation**: [help.split.io](https://help.split.io/)
-- **Terraform Documentation**: [terraform.io](https://www.terraform.io/docs/)
+| Feature | Dev | Staging | Prod | Reason | Razón |
+|---------|-----|---------|------|--------|--------|
+| Voice Banking | ✅ | ❌ | ❌ | Experimental | Experimental |
+| Fraud Detection | ✅ | ✅ | ❌ | Testing phase | Fase de pruebas |
+| Bank Validation | ✅ | ✅ | ✅ | Production ready | Listo para producción |
+
+## 📊 Architecture Overview | Resumen de Arquitectura
+
+```mermaid
+graph TB
+    subgraph "Banking Applications | Aplicaciones Bancarias"
+        WEB[Web Banking App<br/>App Banca Web]
+        MOBILE[Mobile Banking App<br/>App Banca Móvil]
+    end
+    
+    subgraph "Feature Flags | Feature Flags"
+        VALIDATION[Bank Validation<br/>Validación Bancaria]
+        OFFERS[Promotional Offers<br/>Ofertas Promocionales]
+        FRAUD[Fraud Detection<br/>Detección Fraude]
+        VOICE[Voice Banking<br/>Banca por Voz]
+        PAYMENT[Payment Fallback<br/>Fallback Pagos]
+    end
+    
+    subgraph "Environments | Entornos"
+        DEV[Development<br/>Desarrollo]
+        STAGING[Staging<br/>Preparación]
+        PROD[Production<br/>Producción]
+    end
+    
+    WEB --> VALIDATION
+    MOBILE --> OFFERS
+    WEB --> FRAUD
+    MOBILE --> VOICE
+    WEB --> PAYMENT
+    
+    VALIDATION --> DEV
+    VALIDATION --> STAGING
+    VALIDATION --> PROD
+    
+    OFFERS --> DEV
+    OFFERS --> STAGING
+    OFFERS --> PROD
+    
+    FRAUD --> DEV
+    FRAUD --> STAGING
+    
+    VOICE --> DEV
+    
+    PAYMENT --> DEV
+    PAYMENT --> STAGING
+    PAYMENT --> PROD
+    
+    classDef appClass fill:#e3f2fd
+    classDef flagClass fill:#e8f5e8
+    classDef envClass fill:#fff3e0
+    
+    class WEB,MOBILE appClass
+    class VALIDATION,OFFERS,FRAUD,VOICE,PAYMENT flagClass
+    class DEV,STAGING,PROD envClass
+```
+
+## 📚 Complete Documentation | Documentación Completa
+
+### English Documentation
+- [**Complete Banking Platform Guide**](docs/en/README.md) - Comprehensive implementation guide
+- [**Getting Started**](../../docs/en/getting-started.md) - Quick setup tutorial
+- [**Architecture Deep Dive**](../../docs/en/architecture.md) - System design details
+- [**Best Practices**](../../docs/en/best-practices.md) - Production-ready patterns
+
+### Documentación en Español
+- [**Guía Completa de Plataforma Bancaria**](docs/es/README.md) - Guía de implementación completa
+- [**Primeros Pasos**](../../docs/es/primeros-pasos.md) - Tutorial de configuración rápida
+- [**Análisis Profundo de Arquitectura**](../../docs/es/arquitectura.md) - Detalles de diseño del sistema
+- [**Mejores Prácticas**](../../docs/es/mejores-practicas.md) - Patrones listos para producción
+
+## 🔗 Related Resources | Recursos Relacionados
+
+- [Core Module Documentation](../../modules/split-feature-flags/README.md) | [Documentación del Módulo Principal](../../modules/split-feature-flags/README.md)
+- [Split.io Documentation](https://help.split.io/) | [Documentación de Split.io](https://help.split.io/)
+- [Terraform Provider](https://registry.terraform.io/providers/davidji99/split/latest) | [Proveedor de Terraform](https://registry.terraform.io/providers/davidji99/split/latest)
+
+---
+
+**Choose your language to continue | Elige tu idioma para continuar:**
+
+🇺🇸 [**Continue in English**](docs/en/README.md) | 🇪🇸 [**Continúa en Español**](docs/es/README.md)

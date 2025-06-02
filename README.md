@@ -1,240 +1,119 @@
-# Split.io Feature Flags Terraform Infrastructure
+# Split.io Feature Flag Management with Terraform
 
-A comprehensive Terraform infrastructure for managing Split.io feature flags across multiple environments and use cases.
+![Feature Flags](docs/diagrams/banner.md)
 
-## 📁 Repository Structure
+A comprehensive, production-ready Terraform module for managing Split.io feature flags across multiple environments with advanced lifecycle management, safety controls, and multi-language documentation.
+
+## 🌍 Documentation Languages | Idiomas de Documentación
+
+| Language | Idioma | Documentation | Documentación |
+|----------|--------|---------------|---------------|
+| 🇺🇸 **English** | **Inglés** | [📖 Full Documentation](docs/en/README.md) | [📖 Documentación Completa](docs/en/README.md) |
+| 🇪🇸 **Español** | **Spanish** | [📖 Documentación Completa](docs/es/README.md) | [📖 Full Documentation](docs/es/README.md) |
+
+## 🚀 Quick Start | Inicio Rápido
+
+### English
+1. **Choose your use case**: Navigate to [`use-cases/banking-platform/`](use-cases/banking-platform/)
+2. **Follow the guide**: Check the [English documentation](docs/en/README.md)
+3. **Deploy**: Use the provided Terraform configurations
+
+### Español
+1. **Elige tu caso de uso**: Navega a [`use-cases/banking-platform/`](use-cases/banking-platform/)
+2. **Sigue la guía**: Consulta la [documentación en español](docs/es/README.md)
+3. **Despliega**: Usa las configuraciones de Terraform proporcionadas
+
+## 📊 Visual Overview | Resumen Visual
+
+```mermaid
+graph TB
+    subgraph "Feature Flag Lifecycle | Ciclo de Vida"
+        DEV[Development<br/>Desarrollo] --> STAGING[Staging<br/>Preparación]
+        STAGING --> PROD[Production<br/>Producción]
+    end
+    
+    subgraph "Use Cases | Casos de Uso"
+        BANKING[Banking Platform<br/>Plataforma Bancaria]
+        ECOMMERCE[E-commerce<br/>Comercio Electrónico]
+        MOBILE[Mobile App<br/>Aplicación Móvil]
+    end
+    
+    MODULE[Core Module<br/>Módulo Principal] --> DEV
+    MODULE --> STAGING
+    MODULE --> PROD
+    
+    BANKING --> MODULE
+    ECOMMERCE --> MODULE
+    MOBILE --> MODULE
+```
+
+## 🏗️ Repository Structure | Estructura del Repositorio
 
 ```
-.
-├── modules/
-│   └── split-feature-flags/          # Reusable Terraform module
-│       ├── main.tf                   # Core module resources
-│       ├── variables.tf              # Module input variables
-│       ├── outputs.tf                # Module outputs
-│       ├── versions.tf               # Provider requirements
-│       └── README.md                 # Module documentation
-│
-├── use-cases/
-│   └── banking-platform/             # Banking platform implementation
-│       └── README.md                 # Use case documentation
-│
-├── examples/
-│   ├── simple-feature-flag/          # Basic feature flag example
-│   └── advanced-targeting/           # Advanced targeting example
-│
-└── README.md                         # This file
+📁 modules/split-feature-flags/     # Reusable core module | Módulo reutilizable
+📁 use-cases/                      # Implementation examples | Ejemplos de implementación
+  └── banking-platform/            # Banking use case | Caso de uso bancario
+📁 examples/                       # Advanced examples | Ejemplos avanzados
+📁 docs/                          # Documentation | Documentación
+  ├── en/                         # English docs | Docs en inglés
+  ├── es/                         # Spanish docs | Docs en español
+  └── diagrams/                   # Visual diagrams | Diagramas visuales
 ```
 
-## 🚀 Quick Start
+## ✨ Key Features | Características Principales
 
-### 1. Choose Your Implementation Path
+### English
+- **🔒 Environment Safety**: Automatic filtering prevents accidental production deployments
+- **🚀 Lifecycle Management**: Progressive feature promotion through environments
+- **📊 Visual Documentation**: Comprehensive diagrams and examples
+- **🔧 Production Ready**: Battle-tested patterns and best practices
 
-#### **Option A: Use an Existing Use Case**
-```bash
-cd use-cases/[use-case-name]
-# Follow the specific use case README instructions
-```
+### Español
+- **🔒 Seguridad de Entornos**: Filtrado automático previene despliegues accidentales en producción
+- **🚀 Gestión del Ciclo de Vida**: Promoción progresiva de características a través de entornos
+- **📊 Documentación Visual**: Diagramas completos y ejemplos
+- **🔧 Listo para Producción**: Patrones probados y mejores prácticas
 
-#### **Option B: Create a New Use Case**
-```bash
-# Copy an existing use case as a template
-cp -r use-cases/banking-platform use-cases/my-new-use-case
-cd use-cases/my-new-use-case
-# Customize for your specific needs
-```
+## 📚 Documentation Structure | Estructura de Documentación
 
-#### **Option C: Use the Module Directly**
+| Section | English | Español |
+|---------|---------|---------|
+| **Getting Started** | [docs/en/getting-started.md](docs/en/getting-started.md) | [docs/es/primeros-pasos.md](docs/es/primeros-pasos.md) |
+| **Architecture** | [docs/en/architecture.md](docs/en/architecture.md) | [docs/es/arquitectura.md](docs/es/arquitectura.md) |
+| **Feature Management** | [docs/en/feature-management.md](docs/en/feature-management.md) | [docs/es/gestion-caracteristicas.md](docs/es/gestion-caracteristicas.md) |
+| **Use Cases** | [docs/en/use-cases.md](docs/en/use-cases.md) | [docs/es/casos-uso.md](docs/es/casos-uso.md) |
+| **Best Practices** | [docs/en/best-practices.md](docs/en/best-practices.md) | [docs/es/mejores-practicas.md](docs/es/mejores-practicas.md) |
+
+## 🎯 Use Cases | Casos de Uso
+
+### Banking Platform | Plataforma Bancaria
+- **English**: [Banking Platform Documentation](use-cases/banking-platform/docs/en/README.md)
+- **Español**: [Documentación Plataforma Bancaria](use-cases/banking-platform/docs/es/README.md)
+
+## 🔧 Quick Integration Examples | Ejemplos de Integración Rápida
+
 ```hcl
-module "my_feature_flags" {
+module "feature_flags" {
   source = "./modules/split-feature-flags"
   
-  split_api_key     = var.split_api_key
   workspace_name    = "MyWorkspace"
   environment_name  = "production"
   is_production    = true
+  traffic_type_name = "user"
   feature_flags     = var.feature_flags
 }
 ```
 
-## 🏗️ Architecture
+## 🤝 Contributing | Contribuir
 
-### Core Module (`modules/split-feature-flags/`)
-- **Environment-agnostic** Terraform module
-- **Type-safe** variable definitions with validation
-- **Flexible** configuration for any use case
-- **Production-ready** with security best practices
+We welcome contributions in both English and Spanish!
+¡Damos la bienvenida a contribuciones tanto en inglés como en español!
 
-### Use Cases (`use-cases/`)
-- **Real-world implementations** using the core module
-- **Environment-specific** configurations
-- **Best practices** for different scenarios
+- **English**: [Contributing Guide](docs/en/contributing.md)
+- **Español**: [Guía de Contribución](docs/es/contribuir.md)
 
-### Examples (`examples/`)
-- **Simple examples** for quick learning
-- **Advanced patterns** for complex scenarios
-- **Copy-paste ready** configurations
+---
 
-## 📚 Examples
+**Choose your language to continue | Elige tu idioma para continuar:**
 
-### Simple Feature Flag
-Basic on/off toggle implementation.
-```bash
-cd examples/simple-feature-flag
-```
-
-### Advanced Targeting
-Complex A/B testing with multiple treatments and targeting rules.
-```bash
-cd examples/advanced-targeting
-```
-
-## 🔧 Module Features
-
-### ✅ **Environment Management**
-- Multi-environment support (dev/staging/prod)
-- Environment-specific variable files
-- Production/non-production flag handling
-
-### ✅ **Security Best Practices**
-- Sensitive variable handling for API keys
-- No hardcoded secrets in code
-- Proper `.gitignore` configurations
-
-### ✅ **Type Safety**
-- Comprehensive input validation
-- Required field enforcement
-- Logical consistency checks
-
-### ✅ **Flexibility**
-- Support for complex targeting rules
-- Multiple treatment configurations
-- Custom JSON configurations per treatment
-
-## 🚦 Getting Started
-
-### Prerequisites
-- Terraform >= 1.5
-- Split.io account and API key
-- Access to Split.io workspace
-
-### Installation
-1. **Clone this repository**
-2. **Choose your implementation path** (see Quick Start above)
-3. **Configure your Split.io API key**
-4. **Initialize and apply Terraform**
-
-### Environment Variables
-Set your Split.io API key as an environment variable:
-```bash
-export TF_VAR_split_api_key="your-split-io-api-key"
-```
-
-Or use a `.tfvars` file:
-```bash
-echo 'split_api_key = "your-key"' > terraform.tfvars
-```
-
-## 📖 Documentation
-
-### Module Documentation
-- **Core Module**: `modules/split-feature-flags/README.md`
-- **Use Cases**: Check individual README files in `use-cases/*/README.md`
-
-### Key Concepts
-
-#### Feature Flag Structure
-```hcl
-{
-  name              = "feature-name"        # Unique identifier
-  description       = "Feature description" # Human-readable description
-  default_treatment = "off"                # Default treatment
-  treatments = [                           # Available treatments
-    {
-      name           = "off"
-      configurations = "{\"enabled\": false}"
-      description    = "Feature disabled"
-    }
-  ]
-  rules = [                               # Optional targeting rules
-    {
-      treatment = "on"                    # Treatment for this rule
-      size      = 50                     # Percentage allocation
-      condition = {                      # Targeting condition
-        matcher = {
-          type      = "IN_SEGMENT"
-          attribute = "user_segment"
-          strings   = ["beta_users"]
-        }
-      }
-    }
-  ]
-}
-```
-
-## 🛠️ Best Practices
-
-### 1. **Environment Management**
-- Use separate state files per environment
-- Leverage environment-specific `.tfvars` files
-- Set `is_production = true` only for prod
-
-### 2. **Security**
-- Never commit real API keys to version control
-- Use environment variables or secret management
-- Review `.gitignore` files regularly
-
-### 3. **Feature Flag Design**
-- Use descriptive names and descriptions
-- Always provide at least 2 treatments
-- Start with conservative rollout percentages
-- Include meaningful JSON configurations
-
-### 4. **State Management**
-For production environments, configure remote state:
-```hcl
-terraform {
-  backend "s3" {
-    bucket = "your-terraform-state-bucket"
-    key    = "split-feature-flags/terraform.tfstate"
-    region = "us-east-1"
-  }
-}
-```
-
-
-## 🤝 Contributing
-
-1. **Fork the repository**
-2. **Create a feature branch**
-3. **Add your use case or example**
-4. **Update documentation**
-5. **Submit a pull request**
-
-### Adding a New Use Case
-1. Copy the banking platform template
-2. Customize for your specific needs
-3. Add comprehensive documentation
-4. Include environment configurations
-5. Test across multiple environments
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-### For Module Issues
-- Check the module documentation: `modules/split-feature-flags/README.md`
-- Review examples in the `examples/` directory
-
-### For Split.io Provider Issues
-- Visit: [davidji99/terraform-provider-split](https://github.com/davidji99/terraform-provider-split)
-
-### For Split.io Platform Issues
-- Visit: [Split.io Documentation](https://help.split.io/)
-
-## 🔗 Related Resources
-
-- [Split.io Documentation](https://help.split.io/)
-- [Terraform Documentation](https://www.terraform.io/docs/)
-- [Split.io Terraform Provider](https://registry.terraform.io/providers/davidji99/split/latest)
+🇺🇸 [**Continue in English**](docs/en/README.md) | 🇪🇸 [**Continúa en Español**](docs/es/README.md)
