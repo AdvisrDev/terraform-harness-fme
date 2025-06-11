@@ -34,7 +34,7 @@ variable "traffic_type_name" {
 }
 
 variable "feature_flags" {
-  description = "List of feature flags to create"
+  description = "List of feature flags to create with environment-specific configurations"
   type = list(object({
     name              = string
     description       = string
@@ -58,6 +58,27 @@ variable "feature_flags" {
         })
       }))
     })), [])
+    # Environment-specific overrides
+    environment_configs = optional(map(object({
+      default_treatment = optional(string)
+      description       = optional(string)
+      treatments = optional(list(object({
+        name           = string
+        configurations = optional(string, "{}")
+        description    = optional(string, "")
+      })))
+      rules = optional(list(object({
+        treatment = optional(string)
+        size      = optional(number, 100)
+        condition = optional(object({
+          matcher = object({
+            type      = string
+            attribute = string
+            strings   = optional(list(string), [])
+          })
+        }))
+      })))
+    })), {})
   }))
 
   validation {
@@ -146,5 +167,54 @@ variable "feature_flags" {
       length(ff.environments) > 0
     ])
     error_message = "Each feature flag must specify at least one environment."
+  }
+
+  # Validate environment-specific configurations
+  validation {
+    condition = alltrue([
+      for ff in var.feature_flags :
+      alltrue([
+        for env_name, env_config in ff.environment_configs :
+        contains(ff.environments, env_name)
+      ])
+    ])
+    error_message = "Environment-specific configurations can only be defined for environments listed in the 'environments' array."
+  }
+
+  validation {
+    condition = alltrue([
+      for ff in var.feature_flags :
+      alltrue([
+        for env_name, env_config in ff.environment_configs :
+        env_config.treatments != null ? length(env_config.treatments) >= 2 : true
+      ])
+    ])
+    error_message = "Environment-specific treatments must have at least 2 treatments when specified."
+  }
+
+  validation {
+    condition = alltrue([
+      for ff in var.feature_flags :
+      alltrue([
+        for env_name, env_config in ff.environment_configs :
+        env_config.treatments != null && env_config.default_treatment != null ? 
+        contains([for t in env_config.treatments : t.name], env_config.default_treatment) : true
+      ])
+    ])
+    error_message = "Environment-specific default treatment must exist in environment-specific treatments list when both are specified."
+  }
+
+  validation {
+    condition = alltrue([
+      for ff in var.feature_flags :
+      alltrue([
+        for env_name, env_config in ff.environment_configs :
+        env_config.rules != null ? alltrue([
+          for rule in env_config.rules :
+          rule.size >= 0 && rule.size <= 100
+        ]) : true
+      ])
+    ])
+    error_message = "Environment-specific rule sizes must be between 0 and 100."
   }
 }

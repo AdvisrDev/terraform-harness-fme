@@ -13,7 +13,7 @@ data "split_traffic_type" "this" {
   name         = var.traffic_type_name
 }
 
-# Filter feature flags based on current environment
+# Filter feature flags based on current environment and merge environment-specific configurations
 locals {
   # Define environment creation order
   environment_order = ["dev", "staging", "prod"]
@@ -22,14 +22,34 @@ locals {
   current_env_position = index(local.environment_order, var.environment_name)
 
   # Filter feature flags that are allowed in this environment
-  # Only create flags if all preceding environments in their allowed list have been processed
   environment_feature_flags = [
     for ff in var.feature_flags : ff
     if contains(ff.environments, var.environment_name)
   ]
 
+  # Merge base configuration with environment-specific overrides
+  merged_feature_flags = [
+    for ff in local.environment_feature_flags : {
+      name = ff.name
+      # Use environment-specific description if available, otherwise use base description
+      description = try(ff.environment_configs[var.environment_name].description, ff.description)
+      # Use environment-specific default_treatment if available, otherwise use base default_treatment
+      default_treatment = try(ff.environment_configs[var.environment_name].default_treatment, ff.default_treatment)
+      environments      = ff.environments
+      lifecycle_stage   = ff.lifecycle_stage
+      category          = ff.category
+      # Use environment-specific treatments if available, otherwise use base treatments
+      treatments = try(ff.environment_configs[var.environment_name].treatments, ff.treatments)
+      # Use environment-specific rules if available, otherwise use base rules
+      rules = try(ff.environment_configs[var.environment_name].rules, ff.rules)
+      # Store original for reference
+      _original_config = ff
+      _environment_config = try(ff.environment_configs[var.environment_name], null)
+    }
+  ]
+
   # Create map for resources
-  feature_flags_map = { for ff in local.environment_feature_flags : ff.name => ff }
+  feature_flags_map = { for ff in local.merged_feature_flags : ff.name => ff }
 }
 
 resource "split_split" "this" {
