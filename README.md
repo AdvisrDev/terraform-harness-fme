@@ -1,119 +1,104 @@
-# Split.io Feature Flag Management with Terraform
+# Harness Feature Management and Experimentation with Terraform
 
-![Feature Flags](docs/diagrams/banner.md)
+A comprehensive, production-ready Terraform module for managing feature flags across multiple environments with advanced lifecycle management, safety controls, and environment-specific configurations.
 
-A comprehensive, production-ready Terraform module for managing Split.io feature flags across multiple environments with advanced lifecycle management, safety controls, and multi-language documentation.
+---
 
-## 🌍 Documentation Languages | Idiomas de Documentación
+*Módulo de Terraform integral y listo para producción para administrar feature flags en múltiples entornos con gestión avanzada del ciclo de vida, controles de seguridad y configuraciones específicas por entorno.*
 
-| Language | Idioma | Documentation | Documentación |
-|----------|--------|---------------|---------------|
-| 🇺🇸 **English** | **Inglés** | [📖 Full Documentation](docs/en/README.md) | [📖 Documentación Completa](docs/en/README.md) |
-| 🇪🇸 **Español** | **Spanish** | [📖 Documentación Completa](docs/es/README.md) | [📖 Full Documentation](docs/es/README.md) |
+## 📚 Documentation | Documentación
 
-## 🚀 Quick Start | Inicio Rápido
+### English Documentation
 
-### English
-1. **Choose your use case**: Navigate to [`use-cases/banking-platform/`](use-cases/banking-platform/)
-2. **Follow the guide**: Check the [English documentation](docs/en/README.md)
-3. **Deploy**: Use the provided Terraform configurations
+| Category | Description | Path |
+|----------|-------------|------|
+| **🔧 Technical** | Module architecture, module development details | [`documentation/en/technical/`](documentation/en/technical/) |
+| **👥 User Guide** | Implementation guides, tutorials, examples | [`documentation/en/user/`](documentation/en/user/) |
 
-### Español
-1. **Elige tu caso de uso**: Navega a [`use-cases/banking-platform/`](use-cases/banking-platform/)
-2. **Sigue la guía**: Consulta la [documentación en español](docs/es/README.md)
-3. **Despliega**: Usa las configuraciones de Terraform proporcionadas
+---
+### ➡️ Where to start
 
-## 📊 Visual Overview | Resumen Visual
+#### Starter 
+1. [Getting Started](documentation/en/user/1.getting-started.md) 
+2. [Banking Platform Example](use-cases/banking-platform/) 
 
-```mermaid
-graph TB
-    subgraph "Feature Flag Lifecycle | Ciclo de Vida"
-        DEV[Development<br/>Desarrollo] --> STAGING[Staging<br/>Preparación]
-        STAGING --> PROD[Production<br/>Producción]
-    end
-    
-    subgraph "Use Cases | Casos de Uso"
-        BANKING[Banking Platform<br/>Plataforma Bancaria]
-        ECOMMERCE[E-commerce<br/>Comercio Electrónico]
-        MOBILE[Mobile App<br/>Aplicación Móvil]
-    end
-    
-    MODULE[Core Module<br/>Módulo Principal] --> DEV
-    MODULE --> STAGING
-    MODULE --> PROD
-    
-    BANKING --> MODULE
-    ECOMMERCE --> MODULE
-    MOBILE --> MODULE
+#### Advanced 
+1. [Architecture Deep Dive](documentation/en/technical/1.architecture.md) 
+2. [Feature Environment-Specific Management](documentation/en/technical/2.feature-flag-management.md) 
+3. [Best Practices](documentation/en/user/3.best-practices.md) 
+
+
+
+### Documentación en Español
+
+| Categoría | Descripción | Ruta |
+|-----------|-------------|------|
+| **🔧 Técnica** | Arquitectura del módulo, desarrollo del modulo | [`documentation/es/technical/`](documentation/es/technical/) |
+| **👥 Guías de Usuario** | Tutoriales, guías de implementación, ejemplos | [`documentation/es/user/`](documentation/es/user/) |
+
+---
+### ➡️ Como Iniciar
+
+#### Inicial
+2. [Primeros Pasos](documentation/es/user/1.primeros-pasos.md)
+3. [Ejemplo Plataforma Bancaria](use-cases/banking-platform/)
+
+#### Avanzado
+1. [Análisis Profundo de Arquitectura](documentation/es/technical/1.arquitectura.md)
+2. [Configuraciones por Entorno de Feature Flags ](documentation/es/technical/2.configuracion.md)
+3. [Mejores Prácticas](documentation/es/user/3.mejores-practicas.md)
+
+
+---
+
+## 📊 Documentation Structure | Estructura de Documentación
+
 ```
+documentation/
+├── en/                          # English Documentation
 
-## 🏗️ Repository Structure | Estructura del Repositorio
+│   ├── technical/               # Technical Documentation
+│       ├── architecture.md      # Module architecture & design
+│       ├── implementation.md    # Implementation details
+│       ├── configuration.md     # Configuration reference
+│       └── api-reference.md     # API & variables reference
 
-```
-📁 modules/split-feature-flags/     # Reusable core module | Módulo reutilizable
-📁 use-cases/                      # Implementation examples | Ejemplos de implementación
-  └── banking-platform/            # Banking use case | Caso de uso bancario
-📁 examples/                       # Advanced examples | Ejemplos avanzados
-📁 docs/                          # Documentation | Documentación
-  ├── en/                         # English docs | Docs en inglés
-  ├── es/                         # Spanish docs | Docs en español
-  └── diagrams/                   # Visual diagrams | Diagramas visuales
+│   ├── user/                    # User Documentation
+│       ├── getting-started.md   # Quick start guide
+│       ├── tutorials/           # Step-by-step tutorials
+│       ├── best-practices.md    # Best practices & patterns
+│       └── troubleshooting.md   # Common issues & solutions
+│
+├── es/                          # Documentación en Español
+
+│   ├── technical/               # Documentación Técnica
+│   │   ├── arquitectura.md      # Arquitectura y diseño del módulo
+│   │   ├── implementacion.md    # Detalles de implementación
+│   │   ├── configuracion.md     # Referencia de configuración
+│   │   └── referencia-api.md    # Referencia API y variables
+
+└── └── user/                    # Documentación de Usuario
+        ├── primeros-pasos.md    # Guía de inicio rápido
+        ├── tutoriales/          # Tutoriales paso a paso
+        ├── mejores-practicas.md # Mejores prácticas y patrones
+        └── solucion-problemas.md# Problemas comunes y soluciones
 ```
 
 ## ✨ Key Features | Características Principales
 
 ### English
-- **🔒 Environment Safety**: Automatic filtering prevents accidental production deployments
-- **🚀 Lifecycle Management**: Progressive feature promotion through environments
-- **📊 Visual Documentation**: Comprehensive diagrams and examples
-- **🔧 Production Ready**: Battle-tested patterns and best practices
+- **Environment Safety**: Automatic filtering prevents accidental production deployments
+- **Environment-Specific Configs**: Different behaviors per environment with single source of truth
+- **Lifecycle Management**: Progressive feature promotion through environments
+- **Production Ready**: Battle-tested patterns and best practices
 
 ### Español
-- **🔒 Seguridad de Entornos**: Filtrado automático previene despliegues accidentales en producción
-- **🚀 Gestión del Ciclo de Vida**: Promoción progresiva de características a través de entornos
-- **📊 Documentación Visual**: Diagramas completos y ejemplos
-- **🔧 Listo para Producción**: Patrones probados y mejores prácticas
+- **Seguridad de Entornos**: Filtrado automático previene despliegues accidentales en producción
+- **Configuraciones por Entorno**: Diferentes comportamientos por entorno con fuente única de verdad
+- **Gestión del Ciclo de Vida**: Promoción progresiva de características a través de entornos
+- **Listo para Producción**: Patrones probados y mejores prácticas
 
-## 📚 Documentation Structure | Estructura de Documentación
+## 📄 License | Licencia
 
-| Section | English | Español |
-|---------|---------|---------|
-| **Getting Started** | [docs/en/getting-started.md](docs/en/getting-started.md) | [docs/es/primeros-pasos.md](docs/es/primeros-pasos.md) |
-| **Architecture** | [docs/en/architecture.md](docs/en/architecture.md) | [docs/es/arquitectura.md](docs/es/arquitectura.md) |
-| **Feature Management** | [docs/en/feature-management.md](docs/en/feature-management.md) | [docs/es/gestion-caracteristicas.md](docs/es/gestion-caracteristicas.md) |
-| **Use Cases** | [docs/en/use-cases.md](docs/en/use-cases.md) | [docs/es/casos-uso.md](docs/es/casos-uso.md) |
-| **Best Practices** | [docs/en/best-practices.md](docs/en/best-practices.md) | [docs/es/mejores-practicas.md](docs/es/mejores-practicas.md) |
-
-## 🎯 Use Cases | Casos de Uso
-
-### Banking Platform | Plataforma Bancaria
-- **English**: [Banking Platform Documentation](use-cases/banking-platform/docs/en/README.md)
-- **Español**: [Documentación Plataforma Bancaria](use-cases/banking-platform/docs/es/README.md)
-
-## 🔧 Quick Integration Examples | Ejemplos de Integración Rápida
-
-```hcl
-module "feature_flags" {
-  source = "./modules/split-feature-flags"
-  
-  workspace_name    = "MyWorkspace"
-  environment_name  = "production"
-  is_production    = true
-  traffic_type_name = "user"
-  feature_flags     = var.feature_flags
-}
-```
-
-## 🤝 Contributing | Contribuir
-
-We welcome contributions in both English and Spanish!
-¡Damos la bienvenida a contribuciones tanto en inglés como en español!
-
-- **English**: [Contributing Guide](docs/en/contributing.md)
-- **Español**: [Guía de Contribución](docs/es/contribuir.md)
-
----
-
-**Choose your language to continue | Elige tu idioma para continuar:**
-
-🇺🇸 [**Continue in English**](docs/en/README.md) | 🇪🇸 [**Continúa en Español**](docs/es/README.md)
+This project is licensed under the MIT License.  
+Este proyecto está licenciado bajo la Licencia MIT.
