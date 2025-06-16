@@ -1,21 +1,21 @@
 output "workspace_id" {
   description = "Split.io workspace ID"
-  value       = data.split_workspace.this.id
+  value       = local.workspace_id
 }
 
 output "environment_id" {
   description = "Split.io environment ID"
-  value       = split_environment.this.id
+  value       = local.environment_id
 }
 
 output "environment_name" {
   description = "Split.io environment name"
-  value       = split_environment.this.name
+  value       = var.environment_name
 }
 
 output "traffic_type_id" {
   description = "Split.io traffic type ID"
-  value       = data.split_traffic_type.this.id
+  value       = local.traffic_type_id
 }
 
 output "feature_flags" {

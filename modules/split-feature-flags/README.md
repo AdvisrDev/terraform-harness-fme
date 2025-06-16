@@ -1,6 +1,6 @@
 # Split.io Feature Flags Terraform Module
 
-A reusable Terraform module for managing Split.io feature flags across multiple environments and use cases with environment-specific configuration support.
+A reusable Terraform module for managing Split.io feature flags with environment-specific configuration support. This module is designed to work with the `split-administration` module for complete Split.io infrastructure management.
 
 ## ✨ Features
 
@@ -11,17 +11,45 @@ A reusable Terraform module for managing Split.io feature flags across multiple 
 - ✅ **Flexible Architecture**: Suitable for any use case or industry
 - ✅ **Production Ready**: Security best practices and operational controls
 - ✅ **Configuration Inheritance**: Base configurations with environment-specific overrides
+- ✅ **Administration Integration**: Works seamlessly with the split-administration module
 
 ## 🚀 Basic Usage
 
 ```hcl
+# First, set up administration resources
+module "split_administration" {
+  source = "./modules/split-administration"
+
+  workspace_name   = "MyWorkspace"
+  create_workspace = true
+
+  environments = {
+    dev = {
+      name       = "development"
+      production = false
+    }
+    prod = {
+      name       = "production"
+      production = true
+    }
+  }
+
+  traffic_types = {
+    user = {
+      name         = "user"
+      display_name = "User"
+    }
+  }
+}
+
+# Then, create feature flags
 module "split_feature_flags" {
   source = "./modules/split-feature-flags"
 
-  workspace_name      = "MyWorkspace"
-  environment_name    = "production"
-  is_production      = true
-  traffic_type_name  = "user"
+  workspace_id      = module.split_administration.workspace_id
+  environment_id    = module.split_administration.environments["dev"].id
+  environment_name  = "development"
+  traffic_type_id   = module.split_administration.traffic_types["user"].id
 
   feature_flags = [
     {
@@ -54,13 +82,14 @@ module "split_feature_flags" {
 Configure different behaviors for the same feature flag across environments:
 
 ```hcl
+# Use with split-administration module
 module "split_feature_flags" {
   source = "./modules/split-feature-flags"
 
-  workspace_name      = "MyWorkspace"
-  environment_name    = var.environment_name
-  is_production      = var.is_production
-  traffic_type_name  = "user"
+  workspace_id      = module.split_administration.workspace_id
+  environment_id    = module.split_administration.environments[var.environment_key].id
+  environment_name  = var.environment_name
+  traffic_type_id   = module.split_administration.traffic_types["user"].id
 
   feature_flags = [
     {
@@ -221,22 +250,22 @@ Feature flags are automatically filtered based on environment:
 | Name | Version |
 |------|---------|
 | terraform | >= 1.5 |
-| split | ~> 2.0 |
+| split | >= 3.0 |
 
 ## 🔧 Providers
 
 | Name | Version |
 |------|---------|
-| split | ~> 2.0 |
+| split | >= 3.0 |
 
 ## 📥 Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| workspace_name | Split.io workspace name | `string` | n/a | yes |
-| environment_name | Environment name for feature flags | `string` | n/a | yes |
-| is_production | Whether this environment is production | `bool` | n/a | yes |
-| traffic_type_name | Traffic type name for feature flags | `string` | n/a | yes |
+| workspace_id | Split.io workspace ID (from administration module) | `string` | n/a | yes |
+| environment_id | Split.io environment ID (from administration module) | `string` | n/a | yes |
+| environment_name | Environment name for feature flags (for reference) | `string` | n/a | yes |
+| traffic_type_id | Split.io traffic type ID (from administration module) | `string` | n/a | yes |
 | feature_flags | List of feature flags with environment-specific configurations | `list(object({...}))` | n/a | yes |
 
 ### Feature Flags Variable Structure
@@ -321,18 +350,18 @@ feature_flags = list(object({
 
 ## 🎯 Use Cases
 
-### Multi-Environment Deployment
-Deploy the same feature flags across environments with different configurations:
+### Multi-Environment Deployment with Administration Module
+Deploy infrastructure and feature flags across environments:
 
 ```bash
 # Development
-terraform apply -var="environment_name=dev" -var="is_production=false"
+terraform apply -var="environment_key=dev" -var="environment_name=development"
 
 # Staging  
-terraform apply -var="environment_name=staging" -var="is_production=false"
+terraform apply -var="environment_key=staging" -var="environment_name=staging"
 
 # Production
-terraform apply -var="environment_name=prod" -var="is_production=true"
+terraform apply -var="environment_key=prod" -var="environment_name=production"
 ```
 
 ### Progressive Feature Rollout
@@ -383,17 +412,16 @@ The module includes comprehensive validation:
 - Lifecycle stages must be valid values
 - Categories must be valid values
 
-## 📚 Examples
+## 🔗 Module Dependencies
 
-- [Banking Platform](../../use-cases/banking-platform/) - Real-world banking implementation
-- [Environment-Specific Configs](../../examples/environment-specific-configs/) - Detailed environment configuration examples
-- [Simple Feature Flag](../../examples/simple-feature-flag/) - Basic setup
-- [Advanced Targeting](../../examples/advanced-targeting/) - Complex targeting rules
+This module is designed to work with:
+- **split-administration**: Provides workspace, environment, and traffic type management
+- Use the `feature_flag_inputs` output from the administration module as inputs to this module
 
 ## 🔗 Resources
 
 - [Split.io Documentation](https://help.split.io/)
-- [Terraform Split Provider](https://registry.terraform.io/providers/davidji99/split/latest/docs)
+- [Terraform Split Provider](https://registry.terraform.io/providers/splitsoftware/split/latest/docs)
 - [Feature Flag Best Practices](https://www.split.io/blog/feature-flag-best-practices/)
 
 ## 📄 License

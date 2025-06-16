@@ -1,20 +1,26 @@
 data "split_workspace" "this" {
-  name = var.workspace_name
+  count = var.workspace_id == "-" ? 1 : 0
+  name  = var.workspace_name
 }
 
-resource "split_environment" "this" {
-  workspace_id = data.split_workspace.this.id
+data "split_environment" "this" {
+  count        = var.environment_id == "-" ? 1 : 0
+  workspace_id = local.workspace_id
   name         = var.environment_name
-  production   = var.is_production
 }
 
 data "split_traffic_type" "this" {
-  workspace_id = data.split_workspace.this.id
+  count        = var.traffic_type_id == "-" ? 1 : 0
+  workspace_id = local.workspace_id
   name         = var.traffic_type_name
 }
 
-# Filter feature flags based on current environment and merge environment-specific configurations
 locals {
+  workspace_id    = var.workspace_id == "-" ? data.split_workspace.this[0].id : var.workspace_id
+  environment_id  = var.environment_id == "-" ? data.split_environment.this[0].id : var.environment_id
+  traffic_type_id = var.traffic_type_id == "-" ? data.split_traffic_type.this[0].id : var.traffic_type_id
+
+  # Filter feature flags based on current environment and merge environment-specific configurations
   # Define environment creation order
   environment_order = ["dev", "staging", "prod"]
 
@@ -43,7 +49,7 @@ locals {
       # Use environment-specific rules if available, otherwise use base rules
       rules = try(ff.environment_configs[var.environment_name].rules, ff.rules)
       # Store original for reference
-      _original_config = ff
+      _original_config    = ff
       _environment_config = try(ff.environment_configs[var.environment_name], null)
     }
   ]
@@ -54,17 +60,18 @@ locals {
 
 resource "split_split" "this" {
   for_each        = local.feature_flags_map
-  workspace_id    = data.split_workspace.this.id
-  traffic_type_id = data.split_traffic_type.this.id
+  workspace_id    = local.workspace_id
+  traffic_type_id = local.traffic_type_id
   name            = each.value.name
   description     = each.value.description
 }
 
 resource "split_split_definition" "this" {
-  for_each = local.feature_flags_map
+  depends_on = [split_split.this]
+  for_each   = local.feature_flags_map
 
-  workspace_id      = data.split_workspace.this.id
-  environment_id    = split_environment.this.id
+  workspace_id      = local.workspace_id
+  environment_id    = local.environment_id
   split_name        = each.value.name
   default_treatment = each.value.default_treatment
 

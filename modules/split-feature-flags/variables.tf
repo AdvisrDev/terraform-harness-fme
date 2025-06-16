@@ -1,15 +1,28 @@
-variable "workspace_name" {
-  description = "Split.io workspace name"
+# Module inputs from split-administration module
+variable "workspace_id" {
+  description = "Split.io workspace ID"
   type        = string
+  default     = "-"
 
   validation {
-    condition     = length(var.workspace_name) > 0
-    error_message = "Workspace name cannot be empty."
+    condition     = length(var.workspace_id) > 0
+    error_message = "Workspace ID cannot be empty."
+  }
+}
+
+variable "environment_id" {
+  description = "Split.io environment ID"
+  type        = string
+  default     = "-"
+
+  validation {
+    condition     = length(var.environment_id) > 0
+    error_message = "Environment ID cannot be empty."
   }
 }
 
 variable "environment_name" {
-  description = "Environment name for feature flags"
+  description = "Environment name for feature flags (for reference)"
   type        = string
 
   validation {
@@ -17,19 +30,33 @@ variable "environment_name" {
     error_message = "Environment name cannot be empty."
   }
 }
+variable "workspace_name" {
+  description = "Environment name for feature flags (for reference)"
+  type        = string
 
-variable "is_production" {
-  description = "Whether this environment is production"
-  type        = bool
+  validation {
+    condition     = length(var.workspace_name) > 0
+    error_message = "Workspace name cannot be empty."
+  }
 }
-
 variable "traffic_type_name" {
-  description = "Traffic type name for feature flags"
+  description = "Environment name for feature flags (for reference)"
   type        = string
 
   validation {
     condition     = length(var.traffic_type_name) > 0
     error_message = "Traffic type name cannot be empty."
+  }
+}
+
+variable "traffic_type_id" {
+  description = "Split.io traffic type ID"
+  type        = string
+  default     = "-"
+
+  validation {
+    condition     = length(var.traffic_type_id) > 0
+    error_message = "Traffic type ID cannot be empty."
   }
 }
 
@@ -147,7 +174,7 @@ variable "feature_flags" {
 
   validation {
     condition = alltrue([
-      for ff in var.feature_flags : 
+      for ff in var.feature_flags :
       contains(["development", "testing", "staging", "production", "deprecated"], ff.lifecycle_stage)
     ])
     error_message = "Lifecycle stage must be one of: development, testing, staging, production, deprecated."
@@ -155,7 +182,7 @@ variable "feature_flags" {
 
   validation {
     condition = alltrue([
-      for ff in var.feature_flags : 
+      for ff in var.feature_flags :
       contains(["feature", "experiment", "operational", "permission", "killswitch"], ff.category)
     ])
     error_message = "Category must be one of: feature, experiment, operational, permission, killswitch."
@@ -163,7 +190,7 @@ variable "feature_flags" {
 
   validation {
     condition = alltrue([
-      for ff in var.feature_flags : 
+      for ff in var.feature_flags :
       length(ff.environments) > 0
     ])
     error_message = "Each feature flag must specify at least one environment."
@@ -197,7 +224,7 @@ variable "feature_flags" {
       for ff in var.feature_flags :
       alltrue([
         for env_name, env_config in ff.environment_configs :
-        env_config.treatments != null && env_config.default_treatment != null ? 
+        env_config.treatments != null && env_config.default_treatment != null ?
         contains([for t in env_config.treatments : t.name], env_config.default_treatment) : true
       ])
     ])

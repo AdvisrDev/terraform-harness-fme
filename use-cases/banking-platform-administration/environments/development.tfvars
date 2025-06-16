@@ -9,7 +9,7 @@ workspace = {
 # Banking Environments (override for development-specific settings)
 environments = {
   development = {
-    name       = "bank-dev"
+    name       = "dev"
     production = false
   }
 }
