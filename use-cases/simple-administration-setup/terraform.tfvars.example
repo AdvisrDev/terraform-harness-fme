@@ -1,0 +1,19 @@
+# Example terraform.tfvars file for simple administration setup
+# Copy this file to terraform.tfvars and customize for your needs
+
+# Split.io configuration
+# Note: Set your Split.io API token as an environment variable:
+# export SPLIT_API_TOKEN="your-api-token-here"
+
+# These values are used in the main.tf configuration
+# You can override them here if needed
+
+# Example: Override workspace name
+# workspace_name = "my-company-features"
+
+# Example: Add additional workspace tags
+# additional_workspace_tags = {
+#   Department = "Engineering"
+#   CostCenter = "ENG-001"
+#   Project    = "FeatureManagement"
+# }
