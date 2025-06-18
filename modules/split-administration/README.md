@@ -1,16 +1,13 @@
 # Split.io Administration Module
 
-This Terraform module manages the administrative aspects of Split.io, including workspaces, environments, traffic types, segments, and API keys.
+This Terraform module manages Split.io administrative infrastructure including workspaces, environments, traffic types, segments, and API keys with environment-specific configurations.
 
 ## Features
 
-- **Workspace Management**: Create or reference existing workspaces
-- **Environment Management**: Create and manage multiple environments
-- **Traffic Type Management**: Define and configure traffic types
-- **Traffic Type Attributes**: Add custom attributes to traffic types
-- **Segment Management**: Create and manage user segments
-- **Environment Segment Keys**: Manage segment keys per environment
-- **API Key Management**: Create and manage API keys with proper roles
+- **Environment Filtering**: API keys and segment keys filtered by environment
+- **Configuration Merging**: Base configurations with environment-specific overrides
+- **Centralized Management**: Single source for all Split.io infrastructure
+- **Scalable Architecture**: Supports multiple environments and configuration patterns
 
 ## Usage
 
@@ -18,6 +15,8 @@ This Terraform module manages the administrative aspects of Split.io, including 
 module "split_administration" {
   source = "./modules/split-administration"
 
+  environment_name = "dev"
+  
   workspace = {
     name             = "my-workspace"
     create_workspace = true
@@ -27,18 +26,10 @@ module "split_administration" {
     dev = {
       name       = "development"
       production = false
-      tags = {
-        Environment = "dev"
-        Team        = "platform"
-      }
     }
     prod = {
       name       = "production"
       production = true
-      tags = {
-        Environment = "prod"
-        Team        = "platform"
-      }
     }
   }
 
@@ -46,22 +37,6 @@ module "split_administration" {
     user = {
       name         = "user"
       display_name = "User"
-    }
-    account = {
-      name         = "account"
-      display_name = "Account"
-    }
-  }
-
-  traffic_type_attributes = {
-    user_plan = {
-      traffic_type_key = "user"
-      id               = "plan"
-      display_name     = "Subscription Plan"
-      description      = "User subscription plan level"
-      data_type        = "string"
-      is_searchable    = true
-      suggested_values = ["free", "premium", "enterprise"]
     }
   }
 
@@ -73,74 +48,79 @@ module "split_administration" {
     }
   }
 
-  environment_segment_keys = {
-    dev_premium = {
-      environment_key = "dev"
-      segment_name    = "premium_users"
-      keys            = ["user_123", "user_456"]
+  api_keys = [
+    {
+      name         = "server"
+      type         = "server_side"
+      roles        = ["API_FEATURE_FLAG_VIEWER"]
+      environments = ["dev", "prod"]
+      environment_configs = {
+        dev = { name = "dev-server" }
+        prod = { name = "prod-server" }
+      }
     }
-  }
+  ]
 
-  api_keys = {
-    dev_server = {
-      environment_key = "dev"
-      name            = "dev-server-key"
-      type            = "server"
-      roles           = ["admin"]
+  environment_segment_keys = [
+    {
+      name         = "premium_test_keys"
+      segment_name = "premium_users"
+      keys         = ["user1", "user2"]
+      environments = ["dev"]
     }
-  }
+  ]
 }
 ```
 
-## Requirements
+## Key Features
 
-| Name | Version |
-|------|---------|
-| terraform | >= 1.5 |
-| split | >= 1.0 |
+### Environment-Specific API Keys
+- Common API keys deployed across specified environments
+- Environment-specific naming and configuration overrides
+- Development-only keys with administrative access
 
-## Resources
+### Environment-Specific Segment Keys
+- Segment keys filtered by target environment
+- Environment-specific key overrides for testing
 
-| Name | Type |
-|------|------|
-| split_workspace | resource |
-| split_environment | resource |
-| split_traffic_type | resource |
-| split_traffic_type_attribute | resource |
-| split_segment | resource |
-| split_environment_segment_keys | resource |
-| split_api_key | resource |
-| split_workspace | data source |
+## Integration
 
-## Inputs
+Use outputs from this module with the `split-feature-flags` module:
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| workspace | workspace to create | `map(object({...}))` | `{}` | yes |
-| environments | Map of environments to create | `map(object({...}))` | `{}` | yes |
-| traffic_types | Map of traffic types to create | `map(object({...}))` | `{}` | yes |
-| traffic_type_attributes | Map of traffic type attributes to create | `map(object({...}))` | `{}` | yes |
-| segments | Map of segments to create | `map(object({...}))` | `{}` | yes |
-| environment_segment_keys | Map of environment segment keys to manage | `map(object({...}))` | `{}` | yes |
-| api_keys | Map of API keys to create | `map(object({...}))` | `{}` | yes |
+```hcl
+module "feature_flags" {
+  source = "./modules/split-feature-flags"
+  
+  workspace_name    = var.workspace.name
+  environment_name  = var.environment_name
+  traffic_type_name = "user"
+  feature_flags     = var.feature_flags
+}
+```
 
-## Outputs
+## Configuration Patterns
 
-| Name | Description |
-|------|-------------|
-| workspace_id | Split.io workspace ID |
-| environments | Created environments with their details |
-| traffic_types | Created traffic types with their details |
-| segments | Created segments with their details |
-| api_keys | Created API keys with their details |
-| feature_flag_inputs | Structured data for consumption by feature flag modules |
+### File Structure
+```
+├── common.tfvars           # Shared configurations
+├── environments/
+│   ├── development.tfvars  # Dev-specific items
+│   └── production.tfvars   # Prod-specific items
+```
 
-## Module Dependencies
+### Environment Filtering Pattern
+```hcl
+# Only create items for current environment
+api_keys = [
+  {
+    name = "common-key"
+    environments = ["dev", "prod"]  # Available in both
+  },
+  {
+    name = "debug-key"
+    environments = ["dev"]          # Development only
+  }
+]
+```
 
-This module is designed to work with the `split-feature-flags` module. Use the `feature_flag_inputs` output to pass administrative data to feature flag modules.
-
-## Security Considerations
-
-- API keys are marked as sensitive outputs
-- Ensure proper IAM permissions for Split.io provider
-- Use separate workspaces for different environments when appropriate
+This module provides a foundation for managing Split.io infrastructure at scale with proper environment isolation and configuration management.

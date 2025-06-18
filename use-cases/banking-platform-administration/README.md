@@ -1,167 +1,106 @@
-# Banking Platform Administration
+# Banking Platform Administration Use Case
 
-This implementation focuses on setting up the Split.io administrative infrastructure for a banking platform, including workspace, environments, traffic types, attributes, segments, and API keys.
+This use case demonstrates how to set up Split.io infrastructure for a banking platform using the `split-administration` module with environment-specific configurations.
 
 ## Overview
 
-The banking platform administration module creates the foundational Split.io infrastructure that supports feature flag operations. This is the first step in a two-part implementation:
-
-1. **Administration Setup** (this module) - Creates the Split.io infrastructure
-2. **Feature Flag Management** - Uses the infrastructure to deploy feature flags
+The banking platform administration creates the foundational Split.io infrastructure including workspace, environments, traffic types, segments, and API keys with environment-specific overrides.
 
 ## Architecture
 
 ```
-Banking Platform Administration
+split-administration Module
 ├── Workspace: SecureBank-banking-platform
-├── Environments: development, testing, staging, production
-├── Traffic Types: customer, account, transaction, employee, device, branch, service
-├── Attributes: tier, region, kyc_status, risk_score, type, balance_tier, etc.
-├── Segments: wealth_customers, eu_customers, high_risk_customers, etc.
+├── Environments: development, staging, production
+├── Traffic Types: customer, account, transaction
+├── Segments: premium_customers, high_risk_customers
 └── API Keys: Environment-specific with role-based access
 ```
 
+## Implementation
+
+### Module Usage
+
+```hcl
+# main.tf
+module "split_administration" {
+  source = "../../modules/split-administration"
+
+  environment_name         = var.environment_name
+  workspace                = var.workspace
+  environments             = var.environments
+  traffic_types            = var.traffic_types
+  traffic_type_attributes  = var.traffic_type_attributes
+  segments                 = var.segments
+  environment_segment_keys = var.environment_segment_keys
+  api_keys                 = var.api_keys
+}
+```
+
+### Configuration Structure
+
+**File Structure:**
+```
+├── common.tfvars           # Shared configurations
+├── environments/
+│   ├── development.tfvars  # Dev-specific items
+│   ├── staging.tfvars      # Staging-specific items
+│   └── production.tfvars   # Prod-specific items
+```
+
+**Key Features:**
+- Environment filtering for API keys and segment keys
+- Configuration merging with environment-specific overrides
+- Centralized common configurations with environment-specific additions
+
 ## Usage
 
-### 1. Deploy Administration Infrastructure
-
+### Deploy to Development
 ```bash
-# Development environment
-terraform init
-terraform plan -var-file="environments/development.tfvars"
-terraform apply -var-file="environments/development.tfvars"
-
-# Production environment  
-terraform plan -var-file="environments/production.tfvars"
-terraform apply -var-file="environments/production.tfvars"
+terraform apply \
+  -var-file="common.tfvars" \
+  -var-file="environments/development.tfvars"
 ```
 
-### 2. Capture Outputs for Feature Flags
-
-After deployment, capture the outputs needed for feature flag deployment:
-
+### Deploy to Production
 ```bash
-# Get administration outputs
-terraform output -json > administration-outputs.json
-
-# Key outputs needed for feature flags:
-terraform output workspace_id
-terraform output environment_ids
-terraform output traffic_type_ids
+terraform apply \
+  -var-file="common.tfvars" \
+  -var-file="environments/production.tfvars"
 ```
 
-### 3. Environment-Specific Configurations
+## Configuration Patterns
 
-#### Development Environment
-- **Purpose**: Feature development and testing
-- **Security**: Relaxed (synthetic data)
-- **Monitoring**: Basic level
-- **API Keys**: Full access for development team
-- **Segment Keys**: Synthetic test data included
+### Environment-Specific API Keys
+- Common API keys with environment-specific names and configurations
+- Development-only debug keys with full access
+- Production keys with read-only access and strict role separation
 
-#### Production Environment
-- **Purpose**: Live customer operations
-- **Security**: Maximum (PCI-DSS, SOX, GDPR compliant)
-- **Monitoring**: Maximum level with alerting
-- **API Keys**: Read-only with strict role separation
-- **Segment Keys**: Managed externally through secure processes
+### Environment-Specific Segment Keys
+- Development: Synthetic test data for segments
+- Production: External management through secure processes
+
+## Outputs
+
+The module provides outputs for integration with feature flag modules:
+- `workspace_id`: For feature flag workspace reference
+- `environment_ids`: For environment-specific feature flag deployment
+- `traffic_type_ids`: For feature flag traffic type reference
 
 ## Integration with Feature Flags
 
-This administration setup provides the foundation for the banking-platform-feature-flags implementation:
+Use outputs from this module as inputs to the feature flags module:
 
-```bash
-# Use administration outputs in feature flag deployment
-cd ../banking-platform-feature-flags
-
-# Set variables from administration outputs
-export TF_VAR_workspace_id="$(cd ../banking-platform-administration && terraform output -raw workspace_id)"
-export TF_VAR_environment_id="$(cd ../banking-platform-administration && terraform output -raw development_environment_id)"
-export TF_VAR_traffic_type_id="$(cd ../banking-platform-administration && terraform output -raw customer_traffic_type_id)"
-
-# Deploy feature flags
-terraform plan -var-file="environments/development.tfvars"
-terraform apply -var-file="environments/development.tfvars"
+```hcl
+# In feature flags use case
+module "feature_flags" {
+  source = "../../modules/split-feature-flags"
+  
+  workspace_name    = "SecureBank-banking-platform"  # From admin workspace
+  environment_name  = "development"                  # Target environment
+  traffic_type_name = "customer"                     # From admin traffic types
+  feature_flags     = var.feature_flags
+}
 ```
 
-## Key Resources Created
-
-### Traffic Types
-- **customer**: Bank customers with tier, region, KYC status attributes
-- **account**: Bank accounts with type, balance tier, status attributes  
-- **transaction**: Financial transactions with amount tier, channel attributes
-- **employee**: Bank employees with role-based attributes
-- **device**: Customer devices with trust level attributes
-- **branch**: Bank branches for location-based features
-- **service**: Banking services for technical features
-
-### Segments
-- **Customer Segments**: wealth_customers, private_banking_customers, high_risk_customers
-- **Geographic Segments**: eu_customers, us_customers (for compliance)
-- **Product Segments**: mortgage_customers, investment_customers
-- **Operational Segments**: mobile_banking_users, atm_users
-
-### API Keys
-- Environment-specific keys with role-based access:
-  - **Development**: Admin, automation, mobile, web
-  - **Testing**: Server, automation  
-  - **Staging**: Server, mobile, web
-  - **Production**: Read-only server, automation, platform-specific mobile/web
-
-## Compliance and Security
-
-### Banking Compliance
-- **PCI-DSS**: Payment card data protection
-- **SOX**: Financial reporting controls
-- **GDPR**: European data protection
-- **Basel III**: Banking capital requirements
-- **KYC/AML**: Customer verification and anti-money laundering
-
-### Security Controls
-- Encryption enabled for production
-- Audit logging for compliance tracking
-- API key rotation (30-180 days based on environment)
-- Role-based access control
-- Environment isolation
-
-## Monitoring
-
-### CloudWatch Dashboards
-- Administration infrastructure health
-- API key usage metrics
-- Compliance score tracking
-- Security events monitoring
-
-### Alerts
-- Infrastructure health degradation
-- Compliance violations
-- Security incidents
-- API key rotation reminders
-
-## Next Steps
-
-After administration deployment:
-
-1. **Verify Infrastructure**: Review all created resources
-2. **Configure Segment Keys**: Set up production segment keys through secure processes  
-3. **Deploy Feature Flags**: Use the banking-platform-feature-flags implementation
-4. **Set Up Monitoring**: Configure alerts and dashboards
-5. **Security Review**: Conduct security audit and penetration testing
-6. **Compliance Validation**: Verify all compliance requirements are met
-
-## Files Structure
-
-```
-banking-platform-administration/
-├── main.tf                          # Main administration infrastructure
-├── variables.tf                     # Input variables
-├── outputs.tf                       # Output values for feature flags
-├── provider.tf                      # Provider configuration
-├── versions.tf                      # Version constraints
-├── terraform.tfvars.example         # Example configuration
-├── environments/
-│   ├── development.tfvars           # Development environment config
-│   ├── production.tfvars            # Production environment config
-│   └── staging.tfvars               # Staging environment config
-└── README.md                        # This file
-```
+This provides a clean foundation for managing Split.io infrastructure at scale with proper environment isolation and configuration management.
