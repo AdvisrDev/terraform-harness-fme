@@ -1,9 +1,10 @@
-# This configuration sets up the administrative infrastructure for a banking platform
+# This configuration sets up the administrative infrastructure
 # including workspace, environments, traffic types, attributes, segments, and API keys
 
 module "split_administration" {
   source = "../../modules/split-administration"
 
+  environment_name         = var.environment_name
   workspace                = var.workspace
   environments             = var.environments
   traffic_types            = var.traffic_types

@@ -43,31 +43,31 @@ output "feature_flag_definitions" {
 
 output "filtered_feature_flags" {
   description = "Feature flags filtered for current environment"
-  value = local.environment_feature_flags
+  value       = local.environment_feature_flags
 }
 
 output "merged_feature_flags" {
   description = "Feature flags with environment-specific configurations applied"
-  value = local.merged_feature_flags
+  value       = local.merged_feature_flags
 }
 
 output "environment_specific_configs" {
   description = "Environment-specific configurations that were applied"
   value = {
     for ff in local.merged_feature_flags : ff.name => {
-      environment = var.environment_name
+      environment  = var.environment_name
       has_override = ff._environment_config != null
       overrides_applied = ff._environment_config != null ? {
-        description_override = ff._environment_config.description != null
+        description_override       = ff._environment_config.description != null
         default_treatment_override = ff._environment_config.default_treatment != null
-        treatments_override = ff._environment_config.treatments != null
-        rules_override = ff._environment_config.rules != null
+        treatments_override        = ff._environment_config.treatments != null
+        rules_override             = ff._environment_config.rules != null
       } : null
       final_config = {
-        description = ff.description
+        description       = ff.description
         default_treatment = ff.default_treatment
-        treatments_count = length(ff.treatments)
-        rules_count = length(ff.rules)
+        treatments_count  = length(ff.treatments)
+        rules_count       = length(ff.rules)
       }
     }
   }
@@ -91,9 +91,9 @@ output "feature_flags_summary" {
       ]
     }
     environment_name = var.environment_name
-    total_count = length(local.merged_feature_flags)
-    available_count = length(var.feature_flags)
-    filtered_count = length(local.environment_feature_flags)
+    total_count      = length(local.merged_feature_flags)
+    available_count  = length(var.feature_flags)
+    filtered_count   = length(local.environment_feature_flags)
     environment_overrides_count = length([
       for ff in local.merged_feature_flags : ff.name
       if ff._environment_config != null

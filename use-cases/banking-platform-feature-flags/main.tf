@@ -1,8 +1,7 @@
-# This configuration manages feature flags for a banking platform
-# using the administration infrastructure created by banking-platform-administration
+# This configuration manages feature flags using the administration infrastructure
 
-# Banking Platform Feature Flags
-module "banking_feature_flags" {
+# Feature Flags Module
+module "feature_flags" {
   source = "../../modules/split-feature-flags"
 
   workspace_name    = var.workspace_name

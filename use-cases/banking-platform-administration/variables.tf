@@ -1,9 +1,21 @@
+# Environment name for this deployment
+variable "environment_name" {
+  description = "Current environment name for this deployment"
+  type        = string
+  default     = "dev"
+
+  validation {
+    condition     = length(var.environment_name) > 0
+    error_message = "Environment name cannot be empty."
+  }
+}
+
 # Workspace Configuration
 variable "workspace" {
-  description = "Split.io workspace name"
+  description = "Split.io workspace configuration"
   type = object({
     name             = string
-    create_workspace = bool
+    create_workspace = optional(bool, false)
   })
 }
 
@@ -14,6 +26,8 @@ variable "environments" {
     name       = string
     production = bool
   }))
+
+  default = {}
 
   validation {
     condition = alltrue([
@@ -30,6 +44,7 @@ variable "traffic_types" {
     name         = string
     display_name = optional(string)
   }))
+  default = {}
 
   validation {
     condition = alltrue([
@@ -51,6 +66,7 @@ variable "traffic_type_attributes" {
     is_searchable    = optional(bool, true)
     suggested_values = optional(list(string), [])
   }))
+  default = {}
 
   validation {
     condition = alltrue([
@@ -83,6 +99,7 @@ variable "segments" {
     name             = string
     description      = optional(string, "")
   }))
+  default = {}
 
   validation {
     condition = alltrue([
@@ -92,59 +109,33 @@ variable "segments" {
   }
 }
 
-# Environment Segment Keys Configuration
-variable "environment_segment_keys" {
-  description = "Map of environment segment keys to manage"
-  type = map(object({
-    environment_key = string
-    segment_name    = string
-    keys            = list(string)
+variable "api_keys" {
+  description = "Common API keys loaded from common.tfvars"
+  type = list(object({
+    name         = string
+    type         = string
+    roles        = list(string)
+    environments = optional(list(string), [])
+    environment_configs = optional(map(object({
+      name  = optional(string)
+      type  = optional(string)
+      roles = optional(list(string))
+    })), {})
   }))
-
-  validation {
-    condition = alltrue([
-      for esk in var.environment_segment_keys : length(esk.segment_name) > 0
-    ])
-    error_message = "Segment name cannot be empty."
-  }
-
-  validation {
-    condition = alltrue([
-      for esk in var.environment_segment_keys : length(esk.keys) > 0
-    ])
-    error_message = "Keys list cannot be empty."
-  }
+  default = []
 }
 
-# API Keys Configuration
-variable "api_keys" {
-  description = "Map of API keys to create"
-  type = map(object({
-    environment_key = string
-    name            = string
-    type            = string
-    roles           = list(string)
+# Environment Segment Keys Configuration
+variable "environment_segment_keys" {
+  description = "Common environment segment keys loaded from common.tfvars"
+  type = list(object({
+    name         = string
+    segment_name = string
+    keys         = list(string)
+    environments = optional(list(string), [])
+    environment_configs = optional(map(object({
+      keys = optional(list(string))
+    })), {})
   }))
-
-  validation {
-    condition = alltrue([
-      for key in var.api_keys :
-      contains(["admin", "server_side", "client_side"], key.type)
-    ])
-    error_message = "API key type must be one of: admin, server_side, client_side."
-  }
-
-  validation {
-    condition = alltrue([
-      for key in var.api_keys : length(key.name) > 0 && length(key.name) <= 15
-    ])
-    error_message = "API key name cannot be empty."
-  }
-
-  validation {
-    condition = alltrue([
-      for key in var.api_keys : length(key.roles) > 0
-    ])
-    error_message = "API key must have at least one role."
-  }
+  default = []
 }

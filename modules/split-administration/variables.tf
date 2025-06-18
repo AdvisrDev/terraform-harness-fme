@@ -1,3 +1,14 @@
+# Environment name for filtering environment-specific resources
+variable "environment_name" {
+  description = "Current environment name for filtering environment-specific resources"
+  type        = string
+
+  validation {
+    condition     = length(var.environment_name) > 0
+    error_message = "Environment name cannot be empty."
+  }
+}
+
 # Workspace Configuration
 variable "workspace" {
   description = "Split.io workspace name"
@@ -94,11 +105,16 @@ variable "segments" {
 
 # Environment Segment Keys Configuration
 variable "environment_segment_keys" {
-  description = "Map of environment segment keys to manage"
-  type = map(object({
-    environment_key = string
-    segment_name    = string
-    keys            = list(string)
+  description = "List of environment segment keys with environment-specific configurations"
+  type = list(object({
+    name         = string
+    segment_name = string
+    keys         = list(string)
+    environments = optional(list(string), [])
+    # Environment-specific overrides
+    environment_configs = optional(map(object({
+      keys = optional(list(string))
+    })), {})
   }))
 
   validation {
@@ -114,16 +130,33 @@ variable "environment_segment_keys" {
     ])
     error_message = "Keys list cannot be empty."
   }
+
+  validation {
+    condition = alltrue([
+      for esk in var.environment_segment_keys :
+      alltrue([
+        for env_name, env_config in esk.environment_configs :
+        contains(esk.environments, env_name)
+      ])
+    ])
+    error_message = "Environment-specific configurations can only be defined for environments listed in the 'environments' array."
+  }
 }
 
 # API Keys Configuration
 variable "api_keys" {
-  description = "Map of API keys to create"
-  type = map(object({
-    environment_key = string
-    name            = string
-    type            = string
-    roles           = list(string)
+  description = "List of API keys with environment-specific configurations"
+  type = list(object({
+    name         = string
+    type         = string
+    roles        = list(string)
+    environments = optional(list(string), [])
+    # Environment-specific overrides
+    environment_configs = optional(map(object({
+      name  = optional(string)
+      type  = optional(string)
+      roles = optional(list(string))
+    })), {})
   }))
 
   validation {
@@ -146,5 +179,38 @@ variable "api_keys" {
       for key in var.api_keys : length(key.roles) > 0
     ])
     error_message = "API key must have at least one role."
+  }
+
+  validation {
+    condition = alltrue([
+      for key in var.api_keys :
+      alltrue([
+        for env_name, env_config in key.environment_configs :
+        contains(key.environments, env_name)
+      ])
+    ])
+    error_message = "Environment-specific configurations can only be defined for environments listed in the 'environments' array."
+  }
+
+  validation {
+    condition = alltrue([
+      for key in var.api_keys :
+      alltrue([
+        for env_name, env_config in key.environment_configs :
+        env_config.type != null ? contains(["admin", "server_side", "client_side"], env_config.type) : true
+      ])
+    ])
+    error_message = "Environment-specific API key type must be one of: admin, server_side, client_side."
+  }
+
+  validation {
+    condition = alltrue([
+      for key in var.api_keys :
+      alltrue([
+        for env_name, env_config in key.environment_configs :
+        env_config.roles != null ? length(env_config.roles) > 0 : true
+      ])
+    ])
+    error_message = "Environment-specific API key must have at least one role when specified."
   }
 }

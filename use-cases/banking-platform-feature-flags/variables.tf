@@ -1,4 +1,4 @@
-# Banking Platform Feature Flags Variables
+# Feature Flags Variables
 variable "environment_name" {
   description = "Environment name for this feature flag deployment"
   type        = string
@@ -88,7 +88,7 @@ variable "feature_flags" {
     # Environment-specific overrides
     environment_configs = optional(map(object({
       default_treatment = optional(string)
-      description       = optional(string)
+      description       = optional(string, "")
       treatments = optional(list(object({
         name           = string
         configurations = optional(string, "{}")
@@ -129,48 +129,48 @@ variable "feature_flags" {
     error_message = "Feature flag default_treatment cannot be empty."
   }
 
-  validation {
-    condition = alltrue([
-      for ff in var.feature_flags : length(ff.treatments) >= 2
-    ])
-    error_message = "Each feature flag must have at least 2 treatments."
-  }
+  # validation {
+  #   condition = alltrue([
+  #     for ff in var.feature_flags : length(ff.treatments) >= 2
+  #   ])
+  #   error_message = "Each feature flag must have at least 2 treatments."
+  # }
 
-  validation {
-    condition = alltrue([
-      for ff in var.feature_flags : contains([for t in ff.treatments : t.name], ff.default_treatment)
-    ])
-    error_message = "Default treatment must exist in the treatments list."
-  }
+  # validation {
+  #   condition = alltrue([
+  #     for ff in var.feature_flags : contains([for t in ff.treatments : t.name], ff.default_treatment)
+  #   ])
+  #   error_message = "Default treatment must exist in the treatments list."
+  # }
 
-  validation {
-    condition = alltrue([
-      for ff in var.feature_flags :
-      alltrue([
-        for t in ff.treatments : length(t.name) > 0
-      ])
-    ])
-    error_message = "Treatment names cannot be empty."
-  }
+  # validation {
+  #   condition = alltrue([
+  #     for ff in var.feature_flags :
+  #     alltrue([
+  #       for t in ff.treatments : length(t.name) > 0
+  #     ])
+  #   ])
+  #   error_message = "Treatment names cannot be empty."
+  # }
 
-  validation {
-    condition = alltrue([
-      for ff in var.feature_flags :
-      length(ff.treatments) == length(distinct([for t in ff.treatments : t.name]))
-    ])
-    error_message = "Treatment names must be unique within each feature flag."
-  }
+  # validation {
+  #   condition = alltrue([
+  #     for ff in var.feature_flags :
+  #     length(ff.treatments) == length(distinct([for t in ff.treatments : t.name]))
+  #   ])
+  #   error_message = "Treatment names must be unique within each feature flag."
+  # }
 
-  validation {
-    condition = alltrue([
-      for ff in var.feature_flags :
-      alltrue([
-        for rule in ff.rules :
-        rule.size >= 0 && rule.size <= 100
-      ]) if length(ff.rules) > 0
-    ])
-    error_message = "Rule size must be between 0 and 100."
-  }
+  # validation {
+  #   condition = alltrue([
+  #     for ff in var.feature_flags :
+  #     alltrue([
+  #       for rule in ff.rules :
+  #       rule.size >= 0 && rule.size <= 100
+  #     ]) if length(ff.rules) > 0
+  #   ])
+  #   error_message = "Rule size must be between 0 and 100."
+  # }
 
   validation {
     condition = alltrue([

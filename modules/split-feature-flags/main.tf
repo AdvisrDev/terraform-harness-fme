@@ -20,13 +20,6 @@ locals {
   environment_id  = var.environment_id == "-" ? data.split_environment.this[0].id : var.environment_id
   traffic_type_id = var.traffic_type_id == "-" ? data.split_traffic_type.this[0].id : var.traffic_type_id
 
-  # Filter feature flags based on current environment and merge environment-specific configurations
-  # Define environment creation order
-  environment_order = ["dev", "staging", "prod"]
-
-  # Get current environment position in order
-  current_env_position = index(local.environment_order, var.environment_name)
-
   # Filter feature flags that are allowed in this environment
   environment_feature_flags = [
     for ff in var.feature_flags : ff
@@ -38,16 +31,15 @@ locals {
     for ff in local.environment_feature_flags : {
       name = ff.name
       # Use environment-specific description if available, otherwise use base description
-      description = try(ff.environment_configs[var.environment_name].description, ff.description)
+      description = coalesce(try(ff.environment_configs[var.environment_name].description, null), ff.description)
       # Use environment-specific default_treatment if available, otherwise use base default_treatment
-      default_treatment = try(ff.environment_configs[var.environment_name].default_treatment, ff.default_treatment)
-      environments      = ff.environments
+      default_treatment = coalesce(try(ff.environment_configs[var.environment_name].default_treatment, null), ff.default_treatment)
       lifecycle_stage   = ff.lifecycle_stage
       category          = ff.category
       # Use environment-specific treatments if available, otherwise use base treatments
-      treatments = try(ff.environment_configs[var.environment_name].treatments, ff.treatments)
+      treatments = coalesce(try(ff.environment_configs[var.environment_name].treatments, null), ff.treatments)
       # Use environment-specific rules if available, otherwise use base rules
-      rules = try(ff.environment_configs[var.environment_name].rules, ff.rules)
+      rules = coalesce(try(ff.environment_configs[var.environment_name].rules, null), ff.rules)
       # Store original for reference
       _original_config    = ff
       _environment_config = try(ff.environment_configs[var.environment_name], null)
@@ -68,7 +60,7 @@ resource "split_split" "this" {
 
 resource "split_split_definition" "this" {
   depends_on = [split_split.this]
-  for_each   = local.feature_flags_map
+  for_each   = {} #local.feature_flags_map
 
   workspace_id      = local.workspace_id
   environment_id    = local.environment_id
