@@ -16,7 +16,7 @@ output "workspace_created" {
 
 output "environment_ids" {
   description = "Map of environment keys to IDs"
-  value = var.environment_name != "common" ? data.split_environment.this[0].id : {
+  value = var.environment_name != "common" ? { var.environment_name = data.split_environment.this[0].id } : {
     for key, env in split_environment.this : key => env.id
   }
 }

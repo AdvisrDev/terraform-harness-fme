@@ -1,8 +1,6 @@
-# This configuration manages feature flags using the administration infrastructure
-
 # Feature Flags Module
 module "feature_flags" {
-  source = "../../modules/split-feature-flags"
+  source = "app.harness.io/EeRjnXTnS4GrLG5VNNJZUw/terraform-harness-fme/split//modules/split-feature-flags"
 
   workspace_name    = var.workspace_name
   environment_name  = var.environment_name
