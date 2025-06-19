@@ -1,6 +1,6 @@
 data "split_workspace" "this" {
   count = var.workspace_id == "-" ? 1 : 0
-  name  = var.workspace_name
+  name  = var.workspace.name
 }
 
 data "split_environment" "this" {

@@ -4,7 +4,27 @@ A comprehensive, production-ready Terraform module collection for managing Harne
 
 ## 🏗️ Module Architecture
 
-This project provides two main Terraform modules for comprehensive Harness Feature Management and Experimentation management:
+This project provides a root module that coordinates two specialized Terraform modules for comprehensive Harness Feature Management and Experimentation management:
+
+### Root Module
+The main module at the project root acts as a coordinator, consuming the local modules from the `modules/` folder based on configuration:
+
+```hcl
+# Root main.tf
+module "split_administration" {
+  source = "./modules/split-administration"
+  count  = length(var.feature_flags) == 0 ? 1 : 0
+  # Administration-only mode when no feature flags defined
+}
+
+module "feature_flags" {
+  source = "./modules/split-feature-flags"  
+  count  = length(var.feature_flags) > 0 ? 1 : 0
+  # Feature flags mode when feature flags are defined
+}
+```
+
+### Child Modules
 
 | Module | Purpose | Key Features |
 |--------|---------|--------------|
@@ -21,7 +41,7 @@ This project provides two main Terraform modules for comprehensive Harness Featu
 
 ### 1. Infrastructure Setup
 ```hcl
-module "administration" {
+module "split_administration" {
   source = "./modules/split-administration"
   
   environment_name = "dev"
@@ -186,7 +206,7 @@ Este proyecto proporciona dos módulos principales de Terraform para la gestión
 
 ### 1. Configuración de Infraestructura
 ```hcl
-module "administration" {
+module "split_administration" {
   source = "./modules/split-administration"
   
   environment_name = "dev"

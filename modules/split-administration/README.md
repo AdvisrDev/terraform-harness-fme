@@ -85,15 +85,26 @@ module "split_administration" {
 
 ## Integration
 
-Use outputs from this module with the `split-feature-flags` module:
+This module is consumed by the root module, which coordinates between administration and feature flags:
 
 ```hcl
+# Root main.tf coordinates module usage
+module "split_administration" {
+  source = "./modules/split-administration"
+  count  = length(var.feature_flags) == 0 ? 1 : 0
+  
+  environment_name = var.environment_name
+  workspace        = var.workspace
+  # ... other configuration
+}
+
 module "feature_flags" {
   source = "./modules/split-feature-flags"
+  count  = length(var.feature_flags) > 0 ? 1 : 0
   
-  workspace_name    = var.workspace.name
+  workspace         = var.workspace
   environment_name  = var.environment_name
-  traffic_type_name = "user"
+  traffic_type_name = var.traffic_type_name
   feature_flags     = var.feature_flags
 }
 ```

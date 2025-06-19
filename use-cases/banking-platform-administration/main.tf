@@ -2,7 +2,7 @@
 # including workspace, environments, traffic types, attributes, segments, and API keys
 
 module "split_administration" {
-  source = "app.harness.io/EeRjnXTnS4GrLG5VNNJZUw/terraform-harness-fme/split//modules/split-administration"
+  source = "app.harness.io/EeRjnXTnS4GrLG5VNNJZUw/terraform-harness-fme"
 
   environment_name         = var.environment_name
   workspace                = var.workspace

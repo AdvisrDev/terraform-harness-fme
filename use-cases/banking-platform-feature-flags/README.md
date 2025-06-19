@@ -25,15 +25,19 @@ split-feature-flags Module
 
 ### Module Usage
 
-```hcl
-# main.tf
-module "feature_flags" {
-  source = "../../modules/split-feature-flags"
+This use case consumes the root module, which internally uses the split-feature-flags module:
 
-  workspace_name    = var.workspace_name
+```hcl
+# main.tf - Uses root module
+module "banking_platform_feature_flags" {
+  source = "../../"
+
+  workspace         = var.workspace
   environment_name  = var.environment_name
   traffic_type_name = var.traffic_type_name
-  feature_flags     = var.feature_flags
+  
+  # Non-empty feature_flags triggers feature-flags mode
+  feature_flags = var.feature_flags
 }
 ```
 

@@ -21,10 +21,12 @@ split-administration Module
 
 ### Module Usage
 
+This use case consumes the root module, which internally uses the split-administration module:
+
 ```hcl
-# main.tf
-module "split_administration" {
-  source = "../../modules/split-administration"
+# main.tf - Uses root module
+module "banking_platform_administration" {
+  source = "../../"
 
   environment_name         = var.environment_name
   workspace                = var.workspace
@@ -34,6 +36,9 @@ module "split_administration" {
   segments                 = var.segments
   environment_segment_keys = var.environment_segment_keys
   api_keys                 = var.api_keys
+  
+  # Empty feature_flags triggers administration-only mode
+  feature_flags = []
 }
 ```
 
@@ -57,16 +62,14 @@ module "split_administration" {
 
 ### Deploy to Development
 ```bash
+# For root level resources
 terraform apply \
-  -var-file="common.tfvars" \
-  -var-file="environments/development.tfvars"
-```
+  -var-file="common.tfvars" 
 
-### Deploy to Production
-```bash
+# For keys per environment
 terraform apply \
-  -var-file="common.tfvars" \
-  -var-file="environments/production.tfvars"
+  -var-file="segmented_keys.tfvars" \
+  -var-file="environments/development.tfvars"
 ```
 
 ## Configuration Patterns

@@ -5,12 +5,7 @@
 variable "environment_name" {
   description = "Current environment name for this deployment"
   type        = string
-  default     = "dev"
-
-  validation {
-    condition     = length(var.environment_name) > 0
-    error_message = "Environment name cannot be empty."
-  }
+  default     = "common"
 }
 
 # Administration Module Variables
@@ -20,7 +15,6 @@ variable "workspace" {
     name             = string
     create_workspace = optional(bool, false)
   })
-  default = {}
 
   validation {
     condition     = length(var.workspace.name) > 0
@@ -179,22 +173,9 @@ variable "workspace_id" {
 variable "environment_id" {
   default = ""
 }
-variable "feature_flags" {
-  default = ""
-}
+
 variable "traffic_type_id" {
   default = ""
-}
-
-variable "workspace_name" {
-  description = "Harness FME workspace name for feature flags"
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = length(var.workspace_name) > 0
-    error_message = "Workspace name cannot be empty."
-  }
 }
 
 variable "traffic_type_name" {

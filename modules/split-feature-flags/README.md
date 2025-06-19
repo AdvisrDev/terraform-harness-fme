@@ -148,23 +148,25 @@ Feature flags are automatically filtered based on environment:
 
 ## Integration with Administration
 
-This module works with the `split-administration` module:
+This module is consumed by the root module, which coordinates with the `split-administration` module:
 
 ```hcl
-# First deploy administration
-module "administration" {
+# Root main.tf coordinates module usage based on feature_flags variable
+module "split_administration" {
   source = "./modules/split-administration"
-  # ... configuration
+  count  = length(var.feature_flags) == 0 ? 1 : 0
+  # Administration-only mode when no feature flags defined
 }
 
-# Then deploy feature flags
 module "feature_flags" {
   source = "./modules/split-feature-flags"
+  count  = length(var.feature_flags) > 0 ? 1 : 0
+  # Feature flags mode when feature flags are defined
   
-  workspace_name    = var.workspace.name      # From administration
+  workspace         = var.workspace           # Shared workspace config
   environment_name  = var.environment_name    # Target environment  
-  traffic_type_name = "user"                  # From administration
-  feature_flags     = var.feature_flags
+  traffic_type_name = var.traffic_type_name   # Traffic type reference
+  feature_flags     = var.feature_flags       # Feature flag definitions
 }
 ```
 

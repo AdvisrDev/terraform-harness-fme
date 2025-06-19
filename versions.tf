@@ -3,8 +3,7 @@ terraform {
 
   required_providers {
     split = {
-      source  = "davidji99/split"
-      version = ">= 3.0"
+      source = "davidji99/split"
     }
   }
 }

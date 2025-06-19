@@ -56,7 +56,7 @@ output "api_keys" {
       name           = api_key.name
       type           = api_key.type
       roles          = api_key.roles
-      environment_id = api_key.id
+      environment_id = api_key.environment_id
     }
   }
   sensitive = true
@@ -67,4 +67,5 @@ output "api_key_ids" {
   value = {
     for key, api_key in split_api_key.this : key => api_key.id
   }
+  sensitive = true
 }

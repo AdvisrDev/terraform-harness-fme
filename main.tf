@@ -1,8 +1,6 @@
-# This configuration sets up the administrative infrastructure
-# including workspace, environments, traffic types, attributes, segments, and API keys
-
 module "split_administration" {
   source = "app.harness.io/EeRjnXTnS4GrLG5VNNJZUw/terraform-harness-fme/split//modules/split-administration"
+  count  = length(var.feature_flags) == 0 ? 1 : 0
 
   environment_name         = var.environment_name
   workspace                = var.workspace
@@ -14,11 +12,11 @@ module "split_administration" {
   api_keys                 = var.api_keys
 }
 
-# Feature Flags Module
 module "feature_flags" {
   source = "app.harness.io/EeRjnXTnS4GrLG5VNNJZUw/terraform-harness-fme/split//modules/split-feature-flags"
+  count  = length(var.feature_flags) > 0 ? 1 : 0
 
-  workspace_name    = var.workspace_name
+  workspace         = var.workspace
   environment_name  = var.environment_name
   traffic_type_name = var.traffic_type_name
   feature_flags     = var.feature_flags
