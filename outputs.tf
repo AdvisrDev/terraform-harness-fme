@@ -1,12 +1,6 @@
 # Root Module Outputs for Harness Feature Management and Experimentation
 # This file defines outputs for the combined administration and feature flags modules
 
-# Administration Module Outputs (only when administration module is active)
-output "administration" {
-  description = "Complete administration module outputs"
-  value       = length(module.split_administration) > 0 ? module.split_administration[0] : null
-}
-
 output "workspace_id" {
   description = "Harness FME workspace ID"
   value       = length(module.split_administration) > 0 ? module.split_administration[0].workspace_id : null
@@ -83,6 +77,7 @@ output "feature_flags_summary" {
 # Combined Outputs for Integration
 output "deployment_summary" {
   description = "Summary of the complete deployment"
+  sensitive   = false
   value = {
     environment_name = var.environment_name
     workspace_name   = var.workspace.name
