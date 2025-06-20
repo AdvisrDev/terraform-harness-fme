@@ -1,5 +1,5 @@
 module "split_administration" {
-  source = "app.harness.io/EeRjnXTnS4GrLG5VNNJZUw/terraform-harness-fme/split//modules/split-administration"
+  source = "./modules/split-administration"
   count  = length(var.feature_flags) == 0 ? 1 : 0
 
   environment_name         = var.environment_name
@@ -13,7 +13,7 @@ module "split_administration" {
 }
 
 module "feature_flags" {
-  source = "app.harness.io/EeRjnXTnS4GrLG5VNNJZUw/terraform-harness-fme/split//modules/split-feature-flags"
+  source = "./modules/split-feature-flags"
   count  = length(var.feature_flags) > 0 ? 1 : 0
 
   workspace         = var.workspace
