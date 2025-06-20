@@ -85,7 +85,7 @@ output "deployment_summary" {
       environments_count  = length(module.split_administration[0].environment_ids)
       traffic_types_count = length(module.split_administration[0].traffic_type_ids)
       segments_count      = length(module.split_administration[0].segment_ids)
-      api_keys_count      = length(module.split_administration[0].api_keys_count)
+      api_keys_count      = module.split_administration[0].api_keys_count
     } : null
     feature_flags = length(module.feature_flags) > 0 ? {
       total_flags_count       = length(module.feature_flags[0].feature_flags)
