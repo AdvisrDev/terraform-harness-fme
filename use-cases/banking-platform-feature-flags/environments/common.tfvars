@@ -54,6 +54,13 @@ feature_flags = [
           {
             treatment = "on"
             size      = 50
+            condition = {
+              matcher = {
+                type      = "IN_LIST_STRING"
+                attribute = "region"
+                strings   = ["monterrey"]
+              }
+            }
           }
         ]
       }
@@ -143,6 +150,13 @@ feature_flags = [
           {
             treatment = "advanced"
             size      = 100
+            condition = {
+              matcher = {
+                type      = "IN_LIST_STRING"
+                attribute = "region"
+                strings   = ["monterrey"]
+              }
+            }
           }
         ]
       }
@@ -152,6 +166,13 @@ feature_flags = [
           {
             treatment = "basic"
             size      = 100
+            condition = {
+              matcher = {
+                type      = "IN_LIST_STRING"
+                attribute = "region"
+                strings   = ["monterrey"]
+              }
+            }
           }
         ]
       }

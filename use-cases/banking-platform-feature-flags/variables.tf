@@ -1,3 +1,11 @@
+variable "workspace" {
+  description = "Split.io workspace configuration"
+  type = object({
+    name             = string
+    create_workspace = optional(bool, false)
+  })
+}
+
 # Feature Flags Variables
 variable "environment_name" {
   description = "Environment name for this feature flag deployment"
@@ -9,15 +17,6 @@ variable "environment_name" {
   }
 }
 
-variable "workspace_name" {
-  description = "Environment name for feature flags (for reference)"
-  type        = string
-
-  validation {
-    condition     = length(var.workspace_name) > 0
-    error_message = "Workspace name cannot be empty."
-  }
-}
 variable "traffic_type_name" {
   description = "Environment name for feature flags (for reference)"
   type        = string

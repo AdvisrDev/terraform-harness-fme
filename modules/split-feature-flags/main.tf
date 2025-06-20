@@ -60,7 +60,7 @@ resource "split_split" "this" {
 
 resource "split_split_definition" "this" {
   depends_on = [split_split.this]
-  for_each   = {} #local.feature_flags_map
+  for_each   = local.feature_flags_map
 
   workspace_id      = local.workspace_id
   environment_id    = local.environment_id
