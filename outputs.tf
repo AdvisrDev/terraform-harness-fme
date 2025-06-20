@@ -49,38 +49,7 @@ output "environment_segment_keys" {
 }
 
 # Feature Flags Module Outputs (only when feature flags module is active)
-output "feature_flags" {
-  description = "Complete feature flags module outputs"
-  value       = length(module.feature_flags) > 0 ? module.feature_flags[0] : null
-}
 
-output "feature_flags_list" {
-  description = "List of created feature flags with their details"
-  value       = length(module.feature_flags) > 0 ? module.feature_flags[0].feature_flags : {}
-}
-
-output "filtered_feature_flags" {
-  description = "Feature flags filtered for current environment"
-  value       = length(module.feature_flags) > 0 ? module.feature_flags[0].filtered_feature_flags : []
-}
-
-output "merged_feature_flags" {
-  description = "Feature flags with environment-specific configurations applied"
-  value       = length(module.feature_flags) > 0 ? module.feature_flags[0].merged_feature_flags : tolist([])
-}
-
-output "feature_flags_summary" {
-  description = "Summary of feature flags by lifecycle stage and category"
-  value = length(module.feature_flags) > 0 ? module.feature_flags[0].feature_flags_summary : {
-    available_count             = 0
-    by_category                 = {}
-    by_lifecycle                = {}
-    environment_name            = ""
-    environment_overrides_count = 0
-    filtered_count              = 0
-    total_count                 = 0
-  }
-}
 
 # Combined Outputs for Integration
 output "deployment_summary" {
@@ -96,9 +65,8 @@ output "deployment_summary" {
       api_keys_count      = module.split_administration[0].api_keys_count
     } : null
     feature_flags = length(module.feature_flags) > 0 ? {
-      total_flags_count       = length(module.feature_flags[0].feature_flags)
-      environment_flags_count = length(module.feature_flags[0].filtered_feature_flags)
-      merged_flags_count      = length(module.feature_flags[0].merged_feature_flags)
+      feature_flags_summary = length(module.feature_flags) > 0 ? module.feature_flags[0].feature_flags_summary : null
+      # total_flags_count     = length(module.feature_flags[0].feature_flags)
     } : null
   }
 }
