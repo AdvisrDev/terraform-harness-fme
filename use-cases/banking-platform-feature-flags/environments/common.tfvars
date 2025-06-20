@@ -2,7 +2,9 @@
 # This file contains reusable values that apply across all environments
 
 # General workspace and traffic type configuration
-workspace_name    = "AxoltlBank"
+workspace = {
+  name = "AxoltlBank"
+}
 traffic_type_name = "transaction"
 
 # Base feature flags configuration (shared across environments)
