@@ -7,22 +7,41 @@ A comprehensive, production-ready Terraform module collection for managing Harne
 This project provides a root module that coordinates two specialized Terraform modules for comprehensive Harness Feature Management and Experimentation management:
 
 ### Root Module
-The main module at the project root acts as a coordinator, consuming the local modules from the `modules/` folder based on configuration:
+The main module at the project root acts as a coordinator, consuming the local modules from the `modules/` folder based on the `feature_flags` variable:
 
 ```hcl
-# Root main.tf
+# Root main.tf - Conditional module instantiation
 module "split_administration" {
   source = "./modules/split-administration"
   count  = length(var.feature_flags) == 0 ? 1 : 0
-  # Administration-only mode when no feature flags defined
+  # Instantiated when feature_flags is empty (administration-only mode)
+  
+  environment_name         = var.environment_name
+  workspace                = var.workspace
+  environments             = var.environments
+  traffic_types            = var.traffic_types
+  traffic_type_attributes  = var.traffic_type_attributes
+  segments                 = var.segments
+  environment_segment_keys = var.environment_segment_keys
+  api_keys                 = var.api_keys
 }
 
 module "feature_flags" {
   source = "./modules/split-feature-flags"  
   count  = length(var.feature_flags) > 0 ? 1 : 0
-  # Feature flags mode when feature flags are defined
+  # Instantiated when feature_flags has content (feature flags mode)
+  
+  workspace         = var.workspace
+  environment_name  = var.environment_name
+  traffic_type_name = var.traffic_type_name
+  feature_flags     = var.feature_flags
 }
 ```
+
+**Module Selection Logic:**
+- **Administration Mode**: When `feature_flags = []` (empty), only the administration module is instantiated
+- **Feature Flags Mode**: When `feature_flags` contains items, only the feature flags module is instantiated
+- Both modules cannot be active simultaneously - this ensures clean separation of concerns
 
 ### Child Modules
 
@@ -32,17 +51,20 @@ module "feature_flags" {
 | **`split-feature-flags`** | Feature flag management | Feature flags with environment-specific configurations and rollout control |
 
 ### Architecture Benefits
+- **Conditional Instantiation**: Only one module active at a time based on use case
 - **Environment Filtering**: Resources only deployed to specified environments
 - **Configuration Merging**: Base configurations with environment-specific overrides
 - **Clean Separation**: Infrastructure and feature flag concerns separated
 - **Scalable Design**: Supports multiple environments and complex configurations
+- **Flexible Outputs**: Conditional outputs that adapt to the active module
 
 ## 🚀 Quick Start
 
-### 1. Infrastructure Setup
+### 1. Infrastructure Setup (Administration Mode)
 ```hcl
-module "split_administration" {
-  source = "./modules/split-administration"
+# Use root module with empty feature_flags for administration-only mode
+module "banking_administration" {
+  source = "./"  # Root module
   
   environment_name = "dev"
   workspace = { name = "MyWorkspace", create_workspace = true }
@@ -50,32 +72,37 @@ module "split_administration" {
     dev = { name = "dev", production = false }
     prod = { name = "prod", production = true }
   }
-  api_keys = [
-    {
-      name = "server"
-      environments = ["dev", "prod"]
-      environment_configs = {
-        dev = { name = "dev-server" }
-        prod = { name = "prod-server" }
-      }
-    }
-  ]
+  
+  # Empty feature_flags triggers administration mode
+  feature_flags = []
+  
+  # Optional: API keys and segment keys (can be empty arrays)
+  api_keys = []
+  environment_segment_keys = []
 }
 ```
 
-### 2. Feature Flag Deployment
+### 2. Feature Flag Deployment (Feature Flags Mode)
 ```hcl
-module "feature_flags" {
-  source = "./modules/split-feature-flags"
+# Use root module with populated feature_flags for feature flags mode
+module "banking_feature_flags" {
+  source = "./"  # Root module
   
-  workspace_name = "MyWorkspace"
+  workspace = { name = "MyWorkspace", create_workspace = false }
   environment_name = "dev"
   traffic_type_name = "user"
   
+  # Non-empty feature_flags triggers feature flags mode
   feature_flags = [
     {
       name = "new-feature"
+      description = "New awesome feature"
+      default_treatment = "off"
       environments = ["dev", "staging", "prod"]
+      treatments = [
+        { name = "off", configurations = "{\"enabled\": false}" },
+        { name = "on", configurations = "{\"enabled\": true}" }
+      ]
       environment_configs = {
         dev = { default_treatment = "on", rules = [{ treatment = "on", size = 100 }] }
         prod = { rules = [{ treatment = "on", size = 10 }] }
@@ -174,7 +201,7 @@ terraform apply \
 ## 🔧 Requirements
 
 - **Terraform** >= 1.5
-- **Harness Feature Management and Experimentation Provider** >= 3.0
+- **Harness Feature Management and Experimentation Provider** 
 - **Harness Feature Management and Experimentation Account** with API access
 
 ## 📄 License
@@ -339,7 +366,7 @@ terraform apply \
 ## 🔧 Requisitos
 
 - **Terraform** >= 1.5
-- **Harness Feature Management and Experimentation Provider** >= 3.0
+- **Harness Feature Management and Experimentation Provider** 
 - **Cuenta Harness Feature Management and Experimentation** con acceso API
 
 ## 📄 Licencia

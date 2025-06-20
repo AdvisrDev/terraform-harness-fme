@@ -116,19 +116,21 @@ module "banking_platform_feature_flags" {
 
 ## Usage
 
-### Deploy to Development
+### Deploy Feature Flags to Development
 ```bash
 terraform apply \
-  -var-file="common.tfvars" \
+  -var-file="environments/common.tfvars" \
   -var-file="environments/development.tfvars"
 ```
 
-### Deploy to Production  
+### Deploy Feature Flags to Production  
 ```bash
 terraform apply \
-  -var-file="common.tfvars" \
+  -var-file="environments/common.tfvars" \
   -var-file="environments/production.tfvars"
 ```
+
+**Note**: This use case operates in **feature flags mode** since `feature_flags` contains feature flag definitions. This requires the workspace and traffic types to already exist (created by the administration use case).
 
 ## Environment Strategies
 
@@ -149,11 +151,38 @@ terraform apply \
 
 ## Integration with Administration
 
-This module works with the infrastructure created by the banking-platform-administration use case:
+This use case works with the infrastructure created by the **banking-platform-administration** use case using the same root module in different modes:
 
-1. **Deploy Administration First**: Creates workspace, environments, traffic types
-2. **Deploy Feature Flags**: Uses the infrastructure for feature flag deployment
-3. **Reference Common Names**: Use consistent workspace and traffic type names
+### Prerequisites
+1. **Deploy Administration First**: Run banking-platform-administration use case to create:
+   - Workspace (`AxoltlBank`)
+   - Environments (dev, testing, staging, production)
+   - Traffic types (customer, account, transaction, employee, device)
+   - Segments and traffic type attributes
+
+### Module Mode Selection
+```hcl
+# Administration use case (infrastructure setup)
+module "banking_administration" {
+  source = "../../"
+  # ... configuration
+  feature_flags = []  # Empty = administration mode
+}
+
+# Feature flags use case (feature deployment)
+module "banking_feature_flags" {
+  source = "../../"  # Same root module
+  # ... configuration
+  feature_flags = [  # Non-empty = feature flags mode
+    { name = "feature1", ... }
+  ]
+}
+```
+
+### Deployment Sequence
+1. **First**: Deploy `banking-platform-administration` (creates infrastructure)
+2. **Then**: Deploy `banking-platform-feature-flags` (uses existing infrastructure)
+3. **Reference Consistency**: Use the same workspace name and traffic type names
 
 ## Monitoring and Safety
 

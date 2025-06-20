@@ -2,6 +2,10 @@
 
 This Terraform module manages Split.io feature flags with environment-specific configurations, supporting flexible deployment patterns across multiple environments.
 
+## Purpose
+
+This module enables you to define and manage feature flags within your Split.io workspace, applying environment-specific configurations and rollout strategies.
+
 ## Features
 
 - **Environment Filtering**: Only deploy feature flags to specified environments
@@ -9,6 +13,39 @@ This Terraform module manages Split.io feature flags with environment-specific c
 - **Flexible Configuration**: Same treatments across environments OR different per environment
 - **Type-Safe Variables**: Comprehensive validation with detailed error messages
 - **Production Ready**: Security best practices and operational controls
+
+## Inputs
+
+- `workspace_name`: (`string`) The name of the Split.io workspace to manage feature flags in.
+- `environment_name`: (`string`) The name of the target environment (e.g., "dev", "prod").
+- `traffic_type_name`: (`string`) The name of the traffic type associated with the feature flags.
+- `feature_flags`: (`list(object)`) List of feature flag configurations.
+  - `name`: (`string`) Name of the feature flag.
+  - `description`: (`string`) Description of the feature flag.
+  - `default_treatment`: (`string`) The default treatment for the feature flag.
+  - `environments`: (`list(string)`) Environments where the feature flag is deployed.
+  - `lifecycle_stage`: (`string`) Lifecycle stage of the feature flag.
+  - `category`: (`string`) Category of the feature flag.
+  - `treatments`: (`list(object)`) List of treatments for the feature flag.
+    - `name`: (`string`) Name of the treatment.
+    - `configurations`: (`string`) JSON string of configurations for the treatment.
+    - `description`: (`string`) Description of the treatment.
+  - `rules`: (`list(object)`) List of rules for the feature flag.
+    - `treatment`: (`string`) The treatment to apply.
+    - `size`: (`number`) Rollout percentage (between 0 and 100).
+    - `condition`: (`object`) Condition for the rule, including `matcher` (`type`, `attribute`, `strings`).
+  - `environment_configs`: (`map(object)`) Environment-specific overrides for the feature flag.
+    - `default_treatment`: (`string`) Environment-specific default treatment.
+    - `description`: (`string`) Environment-specific description.
+    - `treatments`: (`list(object)`) Environment-specific treatments.
+    - `rules`: (`list(object)`) Environment-specific rules.
+
+## Outputs
+
+When this module is active (through the root module), it provides the following outputs:
+
+- `feature_flags_list`: A list of created feature flags with their details.
+- `deployment_summary`: A summary of the complete deployment, including counts of total, environment, and merged flags.
 
 ## Usage
 
@@ -57,128 +94,104 @@ module "feature_flags" {
     }
   ]
 }
-```
+````
 
-## Configuration Patterns
+-----
 
-### 1. Same Configuration Across Environments
+# Módulo de Banderas de Características de Split.io
 
-```hcl
-feature_flags = [
-  {
-    name = "kill-switch"
-    environments = ["dev", "staging", "prod"]
-    default_treatment = "active"
-    treatments = [
-      { name = "active", configurations = "{\"enabled\": true}" },
-      { name = "disabled", configurations = "{\"enabled\": false}" }
-    ]
-    # No environment_configs = same everywhere
-  }
-]
-```
+Este módulo de Terraform gestiona las banderas de características de Split.io con configuraciones específicas por entorno, soportando patrones de despliegue flexibles en múltiples entornos.
 
-### 2. Environment-Specific Configurations
+## Propósito
 
-```hcl
-feature_flags = [
-  {
-    name = "payment-system"
-    environments = ["dev", "staging", "prod"]
-    
-    environment_configs = {
-      dev = {
-        default_treatment = "enhanced"
-        treatments = [
-          { name = "legacy", configurations = "{\"version\": \"v1\", \"debug\": true}" },
-          { name = "enhanced", configurations = "{\"version\": \"v2\", \"debug\": true}" }
-        ]
-      }
-      staging = {
-        rules = [{ treatment = "enhanced", size = 50 }]
-      }
-      prod = {
-        rules = [{ treatment = "enhanced", size = 5 }]
-      }
-    }
-  }
-]
-```
+Este módulo le permite definir y gestionar banderas de características dentro de su workspace de Split.io, aplicando configuraciones específicas de entorno y estrategias de lanzamiento.
 
-### 3. Environment-Only Features
+## Características
 
-```hcl
-feature_flags = [
-  {
-    name = "debug-panel"
-    environments = ["dev"]  # Only in development
-    default_treatment = "on"
-    treatments = [
-      { name = "off", configurations = "{\"debug\": false}" },
-      { name = "on", configurations = "{\"debug\": true}" }
-    ]
-  }
-]
-```
+  - **Filtrado por Entorno**: Solo despliega banderas de características a los entornos especificados
+  - **Fusión de Configuraciones**: Configuraciones base con anulaciones específicas por entorno
+  - **Configuración Flexible**: Mismos tratamientos en todos los entornos O diferentes por entorno
+  - **Variables con Tipado Seguro**: Validación exhaustiva con mensajes de error detallados
+  - **Listo para Producción**: Mejores prácticas de seguridad y controles operativos
 
-## Environment Safety
+## Entradas
 
-Feature flags are automatically filtered based on environment:
+  - `workspace_name`: (`string`) El nombre del workspace de Split.io para gestionar las banderas de características.
+  - `environment_name`: (`string`) El nombre del entorno de destino (por ejemplo, "dev", "prod").
+  - `traffic_type_name`: (`string`) El nombre del tipo de tráfico asociado a las banderas de características.
+  - `feature_flags`: (`list(object)`) Lista de configuraciones de banderas de características.
+      - `name`: (`string`) Nombre de la bandera de características.
+      - `description`: (`string`) Descripción de la bandera de características.
+      - `default_treatment`: (`string`) El tratamiento por defecto para la bandera de características.
+      - `environments`: (`list(string)`) Entornos donde se despliega la bandera de características.
+      - `lifecycle_stage`: (`string`) Etapa del ciclo de vida de la bandera de características.
+      - `category`: (`string`) Categoría de la bandera de características.
+      - `treatments`: (`list(object)`) Lista de tratamientos para la bandera de características.
+          - `name`: (`string`) Nombre del tratamiento.
+          - `configurations`: (`string`) Cadena JSON de configuraciones para el tratamiento.
+          - `description`: (`string`) Descripción del tratamiento.
+      - `rules`: (`list(object)`) Lista de reglas para la bandera de características.
+          - `treatment`: (`string`) El tratamiento a aplicar.
+          - `size`: (`number`) Porcentaje de lanzamiento (entre 0 y 100).
+          - `condition`: (`object`) Condición para la regla, incluyendo `matcher` (`type`, `attribute`, `strings`).
+      - `environment_configs`: (`map(object)`) Anulaciones específicas del entorno para la bandera de características.
+          - `default_treatment`: (`string`) Tratamiento por defecto específico del entorno.
+          - `description`: (`string`) Descripción específica del entorno.
+          - `treatments`: (`list(object)`) Tratamientos específicos del entorno.
+          - `rules`: (`list(object)`) Reglas específicas del entorno.
 
-| Flag Configuration | Dev | Staging | Prod | Result |
-|-------------------|-----|---------|------|--------|
-| `environments = ["dev"]` | ✅ | ❌ | ❌ | Development only |
-| `environments = ["dev", "staging"]` | ✅ | ✅ | ❌ | Testing phase |
-| `environments = ["dev", "staging", "prod"]` | ✅ | ✅ | ✅ | Production ready |
+## Salidas
 
-## Configuration Inheritance
+Cuando este módulo está activo (a través del módulo raíz), proporciona las siguientes salidas:
 
-- **Base Configuration**: Provides fallback values for all environments
-- **Environment-Specific**: Overrides specific attributes for target environments
-- **Selective Override**: Only specified attributes are overridden, others inherit from base
+  - `feature_flags_list`: Una lista de las banderas de características creadas con sus detalles.
+  - `deployment_summary`: Un resumen del despliegue completo, incluyendo el recuento total de banderas, las banderas de entorno y las banderas fusionadas.
 
-### Override Capabilities
-
-| Attribute | Override Behavior |
-|-----------|------------------|
-| `description` | Replace environment-specific description |
-| `default_treatment` | Replace environment-specific default |
-| `treatments` | Complete replacement of treatments |
-| `rules` | Complete replacement of rules |
-
-## Integration with Administration
-
-This module is consumed by the root module, which coordinates with the `split-administration` module:
+## Uso
 
 ```hcl
-# Root main.tf coordinates module usage based on feature_flags variable
-module "split_administration" {
-  source = "./modules/split-administration"
-  count  = length(var.feature_flags) == 0 ? 1 : 0
-  # Administration-only mode when no feature flags defined
-}
-
 module "feature_flags" {
   source = "./modules/split-feature-flags"
-  count  = length(var.feature_flags) > 0 ? 1 : 0
-  # Feature flags mode when feature flags are defined
-  
-  workspace         = var.workspace           # Shared workspace config
-  environment_name  = var.environment_name    # Target environment  
-  traffic_type_name = var.traffic_type_name   # Traffic type reference
-  feature_flags     = var.feature_flags       # Feature flag definitions
+
+  workspace_name    = "my-workspace"
+  environment_name  = "dev"
+  traffic_type_name = "user"
+
+  feature_flags = [
+    {
+      name              = "new-feature"
+      description       = "New awesome feature"
+      default_treatment = "off"
+      environments      = ["dev", "staging", "prod"]
+      lifecycle_stage   = "development"
+      category          = "feature"
+      
+      treatments = [
+        {
+          name           = "off"
+          configurations = "{\"enabled\": false}"
+          description    = "Feature disabled"
+        },
+        {
+          name           = "on"
+          configurations = "{\"enabled\": true}"
+          description    = "Feature enabled"
+        }
+      ]
+      
+      rules = []
+      
+      # Environment-specific configurations
+      environment_configs = {
+        dev = {
+          default_treatment = "on"
+          rules = [{ treatment = "on", size = 100 }]
+        }
+        prod = {
+          rules = [{ treatment = "on", size = 10 }]
+        }
+      }
+    }
+  ]
 }
 ```
-
-## Validation Rules
-
-The module includes comprehensive validation:
-
-- Feature flag names cannot be empty
-- Each feature flag must have at least 2 treatments
-- Default treatment must exist in treatments list
-- Environment-specific configurations must reference valid environments
-- Rule sizes must be between 0 and 100
-- Lifecycle stages and categories must be valid values
-
-This module provides a robust foundation for managing feature flags at scale with proper environment isolation and flexible configuration management.

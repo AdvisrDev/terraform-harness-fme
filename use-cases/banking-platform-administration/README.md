@@ -60,17 +60,33 @@ module "banking_platform_administration" {
 
 ## Usage
 
-### Deploy to Development
+### Deploy Shared Administration Setup Only
 ```bash
-# For root level resources
+# Administration-only mode (infrastructure setup)
 terraform apply \
-  -var-file="common.tfvars" 
+  -var-file="environments/common.tfvars"
+```
 
-# For keys per environment
+### Deploy with Environment-Specific Resources
+```bash
+# Add environment-specific API keys and segment keys
 terraform apply \
-  -var-file="segmented_keys.tfvars" \
+  -var-file="environments/segmented_keys.tfvars" \
   -var-file="environments/development.tfvars"
 ```
+
+**Note**: This use case operates in **administration mode** since `feature_flags = []` in the configuration. This ensures only infrastructure resources are created.
+
+### Current Configuration Status
+- ✅ **Workspace**: AxoltlBank (will be created)
+- ✅ **Environments**: dev, testing, staging, production (4 environments)
+- ✅ **Traffic Types**: customer, account, transaction, employee, device (5 types)
+- ✅ **Traffic Type Attributes**: Configured with proper data types and suggested values
+- ✅ **Segments**: 4 customer segments defined (wealth, high-risk, EU, mobile users)
+- ⚠️ **API Keys**: Empty array (no API keys configured)
+- ⚠️ **Environment Segment Keys**: Empty array (no segment keys configured)
+
+To add API keys or segment keys, uncomment and configure the relevant sections in `environments/common.tfvars`.
 
 ## Configuration Patterns
 
@@ -85,25 +101,39 @@ terraform apply \
 
 ## Outputs
 
-The module provides outputs for integration with feature flag modules:
-- `workspace_id`: For feature flag workspace reference
-- `environment_ids`: For environment-specific feature flag deployment
-- `traffic_type_ids`: For feature flag traffic type reference
+The module provides administration-specific outputs when active:
+- `workspace_id`: Created workspace ID
+- `workspace_name`: Workspace name 
+- `workspace_created`: Whether workspace was created
+- `environment_ids`: Map of environment names to IDs
+- `traffic_type_ids`: Map of traffic type names to IDs
+- `segment_ids`: Map of segment names to IDs
+- `api_keys`: Created API keys (sensitive)
+- `api_key_ids`: Map of API key names to IDs (sensitive)
 
 ## Integration with Feature Flags
 
-Use outputs from this module as inputs to the feature flags module:
+This administration setup creates the foundation for feature flag deployments. To deploy feature flags, use the **banking-platform-feature-flags** use case which consumes the same root module but in feature flags mode:
 
 ```hcl
-# In feature flags use case
-module "feature_flags" {
-  source = "../../modules/split-feature-flags"
+# Feature flags use case - separate deployment
+module "banking_feature_flags" {
+  source = "../../"  # Same root module
   
-  workspace_name    = "SecureBank-banking-platform"  # From admin workspace
-  environment_name  = "development"                  # Target environment
-  traffic_type_name = "customer"                     # From admin traffic types
-  feature_flags     = var.feature_flags
+  workspace = { 
+    name = "AxoltlBank"        # Same workspace name as administration
+    create_workspace = false   # Workspace already exists
+  }
+  environment_name  = "development"
+  traffic_type_name = "customer"  # From administration traffic types
+  
+  # Non-empty feature_flags triggers feature flags mode
+  feature_flags = var.feature_flags
 }
 ```
+
+**Deployment Sequence:**
+1. **First**: Deploy administration (this use case) to create infrastructure
+2. **Then**: Deploy feature flags using the created workspace and traffic types
 
 This provides a clean foundation for managing Split.io infrastructure at scale with proper environment isolation and configuration management.
