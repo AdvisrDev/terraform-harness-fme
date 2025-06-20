@@ -66,12 +66,20 @@ output "filtered_feature_flags" {
 
 output "merged_feature_flags" {
   description = "Feature flags with environment-specific configurations applied"
-  value       = length(module.feature_flags) > 0 ? module.feature_flags[0].merged_feature_flags : []
+  value       = length(module.feature_flags) > 0 ? module.feature_flags[0].merged_feature_flags : tolist([])
 }
 
 output "feature_flags_summary" {
   description = "Summary of feature flags by lifecycle stage and category"
-  value       = length(module.feature_flags) > 0 ? module.feature_flags[0].feature_flags_summary : {}
+  value = length(module.feature_flags) > 0 ? module.feature_flags[0].feature_flags_summary : {
+    available_count             = 0
+    by_category                 = {}
+    by_lifecycle                = {}
+    environment_name            = ""
+    environment_overrides_count = 0
+    filtered_count              = 0
+    total_count                 = 0
+  }
 }
 
 # Combined Outputs for Integration
