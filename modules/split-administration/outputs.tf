@@ -69,3 +69,8 @@ output "api_key_ids" {
   }
   sensitive = true
 }
+
+output "api_keys_count" {
+  description = "Map of API key names to IDs"
+  value       = length(split_api_key.this)
+}
